@@ -1,0 +1,16 @@
+{
+    "name": "NaninovelPostProcessFX",
+    "references": [
+        "Elringus.Naninovel.Runtime",
+        "Unity.Postprocessing.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
