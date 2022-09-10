@@ -201,6 +201,8 @@ namespace NaninovelPostProcessFX
             }
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -270,6 +272,8 @@ namespace NaninovelPostProcessFX
                   bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
 
         }
+
+#endif
     }
 
 

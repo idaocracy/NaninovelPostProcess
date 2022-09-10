@@ -139,7 +139,7 @@ namespace NaninovelPostProcessFX {
             else dof.focalLength.value = focalLength;
         }
 
-
+#if UNITY_EDITOR
 
         public string SceneAssistantParameters()
         {
@@ -178,6 +178,8 @@ namespace NaninovelPostProcessFX {
 
             return Duration + "," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
         }
+
+#endif
     }
 
 

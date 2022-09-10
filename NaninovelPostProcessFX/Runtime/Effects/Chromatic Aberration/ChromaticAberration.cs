@@ -129,9 +129,18 @@ namespace NaninovelPostProcessFX {
             }
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
+
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Test", GUILayout.Width(413)))
+            {
+                Selection.activeGameObject = this.gameObject;
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
@@ -165,6 +174,8 @@ namespace NaninovelPostProcessFX {
 
             return Duration + "," + volume.weight + "," + chromaticAberration.spectralLut.value?.name + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
         }
+
+#endif
     }
 
 

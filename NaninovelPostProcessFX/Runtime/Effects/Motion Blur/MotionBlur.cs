@@ -118,6 +118,8 @@ namespace NaninovelPostProcessFX {
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -143,6 +145,8 @@ namespace NaninovelPostProcessFX {
 
             return Duration + "," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
         }
+
+#endif
     }
 
 

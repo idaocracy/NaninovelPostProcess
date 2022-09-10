@@ -168,6 +168,8 @@ namespace NaninovelPostProcessFX {
             else lensDistortion.scale.value = scale;
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -212,6 +214,8 @@ namespace NaninovelPostProcessFX {
 
             return Duration + "," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
         }
+
+#endif
     }
 
 

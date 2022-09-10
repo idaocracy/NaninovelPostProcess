@@ -163,6 +163,8 @@ namespace NaninovelPostProcessFX
             else autoExposure.speedDown.value = anamorphicRatio;
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -215,6 +217,8 @@ namespace NaninovelPostProcessFX
             return Duration + "," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
                   autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
         }
+
+#endif
     }
 
 

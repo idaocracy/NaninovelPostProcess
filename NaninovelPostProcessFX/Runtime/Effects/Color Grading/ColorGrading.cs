@@ -329,7 +329,7 @@ namespace NaninovelPostProcessFX {
             colorGrading.mixerBlueOutBlueIn.value = blue.z;
         }
 
-
+#if UNITY_EDITOR
         public string SceneAssistantParameters()
         {
 
@@ -438,6 +438,8 @@ namespace NaninovelPostProcessFX {
                 colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
                 colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
         }
+
+#endif
     }
 
 

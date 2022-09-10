@@ -138,6 +138,7 @@ namespace NaninovelPostProcessFX
             else grain.lumContrib.value = luminanceContribution;
         }
 
+#if UNITY_EDITOR
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -175,6 +176,8 @@ namespace NaninovelPostProcessFX
 
             return Duration + "," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
         }
+
+#endif
     }
 
 

@@ -227,6 +227,8 @@ namespace NaninovelPostProcessFX {
             }
         }
 
+#if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
@@ -306,6 +308,7 @@ namespace NaninovelPostProcessFX {
             }
 
         }
+#endif
     }
 
 
