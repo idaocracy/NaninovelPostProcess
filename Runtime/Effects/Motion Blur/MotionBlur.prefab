@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4593720522486675509}
   - component: {fileID: -4877379761744591092}
-  - component: {fileID: 6126630396096143695}
+  - component: {fileID: 572145833013098744}
+  - component: {fileID: 3781535447178177220}
   m_Layer: 8
-  m_Name: Vignette
+  m_Name: MotionBlur
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49,7 +50,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &6126630396096143695
+--- !u!114 &572145833013098744
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,19 +59,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 4593720522486675657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 402b240783551dd4dbf757c805a88d60, type: 3}
+  m_Script: {fileID: 11500000, guid: b4fd756ab652f0145b602cd9a5949231, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultMode: Masked
-  defaultColor: {r: 0, g: 0, b: 0, a: 1}
-  defaultCenter: {x: 0.5, y: 0.5}
-  defaultIntensity: 0
-  defaultSmoothness: 0.2
-  defaultRoundness: 1
-  defaultRounded: 1
-  defaultMask: 
-  defaultOpacity: 1
+  defaultFocusDistance: 0.1
   defaultFadeOutDuration: 0
-  maskTextures: []
+--- !u!114 &3781535447178177220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

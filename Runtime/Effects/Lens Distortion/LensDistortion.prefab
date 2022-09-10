@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4593720522486675509}
   - component: {fileID: -4877379761744591092}
-  - component: {fileID: 1785622043176292029}
+  - component: {fileID: 8525144003916229999}
+  - component: {fileID: 515734395121903376}
   m_Layer: 8
-  m_Name: Grain
+  m_Name: LensDistortion
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -49,7 +50,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &1785622043176292029
+--- !u!114 &8525144003916229999
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,14 +59,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 4593720522486675657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdf26d938f771c649bd2ef3f0b8cce8a, type: 3}
+  m_Script: {fileID: 11500000, guid: a3b971615083ab34e931a79ba8470859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logResult: 0
-  defaultColored: 1
   defaultDuration: 0.35
   defaultVolumeWeight: 1
+  defaultFocusDistance: 0.1
   defaultIntensity: 0
-  defaultSize: 1
-  defaultluminanceContribution: 0.8
+  defaultXMultiplier: 1
+  defaultYMultiplier: 1
+  defaultCenterX: 0
+  defaultCenterY: 0
+  defaultScale: 1
   defaultFadeOutDuration: 0
+--- !u!114 &515734395121903376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

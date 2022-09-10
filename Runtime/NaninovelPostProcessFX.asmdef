@@ -2,8 +2,8 @@
     "name": "NaninovelPostProcessFX",
     "references": [
         "Elringus.Naninovel.Runtime",
-        "Unity.Postprocessing.Runtime",
-        "Elringus.Naninovel.Editor"
+        "Elringus.Naninovel.Editor",
+        "Unity.Postprocessing.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

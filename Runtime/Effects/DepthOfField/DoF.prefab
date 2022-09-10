@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 4593720522486675509}
   - component: {fileID: -4877379761744591092}
-  - component: {fileID: -3518409669405606627}
+  - component: {fileID: 6046142289734016226}
+  - component: {fileID: -8655118070400986142}
   m_Layer: 8
-  m_Name: ChromaticAberration
+  m_Name: DoF
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -44,12 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sharedProfile: {fileID: 11400000, guid: 307b9dd1166742b468fe62e638c55ca1, type: 2}
+  sharedProfile: {fileID: 0}
   isGlobal: 1
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &-3518409669405606627
+--- !u!114 &6046142289734016226
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,14 +59,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 4593720522486675657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0c04faa60559ed44b82615cd2136d23, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f9c6b30b8277de4281e11341205f8e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultIntensity: 1
-  defaultFastMode: 0
+  defaultFocusDistance: 0.1
+  defaultAperture: 1
+  defaultFocalLength: 1
+  defaultMaxBlurSize: Medium
   defaultFadeOutDuration: 0
-  spectralLuts:
-  - {fileID: 2800000, guid: ff6ddbaa51f25994ca8b3888f2f62add, type: 3}
-  - {fileID: 2800000, guid: ff6ddbaa51f25994ca8b3888f2f62add, type: 3}
+--- !u!114 &-8655118070400986142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

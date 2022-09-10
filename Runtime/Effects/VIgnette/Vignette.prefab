@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &2261174484603219885
+--- !u!1 &4593720522486675657
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,37 +8,38 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2614796084570639616}
-  - component: {fileID: 7018614623841673359}
-  - component: {fileID: 4147369095396762139}
+  - component: {fileID: 4593720522486675509}
+  - component: {fileID: -4877379761744591092}
+  - component: {fileID: 6126630396096143695}
+  - component: {fileID: 2727140861954473522}
   m_Layer: 8
-  m_Name: ColorGrading
-  m_TagString: Untagged
+  m_Name: Vignette
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2614796084570639616
+--- !u!4 &4593720522486675509
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2261174484603219885}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7018614623841673359
+--- !u!114 &-4877379761744591092
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2261174484603219885}
+  m_GameObject: {fileID: 4593720522486675657}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
@@ -49,35 +50,40 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &4147369095396762139
+--- !u!114 &6126630396096143695
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2261174484603219885}
+  m_GameObject: {fileID: 4593720522486675657}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d98dc871a166914e8597bafe78f689e, type: 3}
+  m_Script: {fileID: 11500000, guid: 402b240783551dd4dbf757c805a88d60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logResult: 0
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultMode: Low Definition Range
-  defaultTemperature: 0
-  defaultTint: 0
-  defaultPostExposure: 0
-  defaultColorFilter: {r: 1, g: 1, b: 1, a: 1}
-  defaultHueShift: 0
-  defaultSaturation: 0
-  defaultContrast: 0
-  defaultRedChannel: {x: 100, y: 0, z: 0}
-  defaultGreenChannel: {x: 0, y: 100, z: 0}
-  defaultBlueChannel: {x: 0, y: 0, z: 100}
-  defaultLift: {x: 1, y: 1, z: 1, w: 0}
-  defaultGamma: {x: 1, y: 1, z: 1, w: 0}
-  defaultGain: {x: 1, y: 1, z: 1, w: 0}
-  defaultLookUpTexture: None
-  defaultFadeOutDuration: 0.35
-  lookUpTextures: []
+  defaultMode: Masked
+  defaultColor: {r: 0, g: 0, b: 0, a: 1}
+  defaultCenter: {x: 0.5, y: 0.5}
+  defaultIntensity: 0
+  defaultSmoothness: 0.2
+  defaultRoundness: 1
+  defaultRounded: 1
+  defaultMask: 
+  defaultOpacity: 1
+  defaultFadeOutDuration: 0
+  maskTextures: []
+--- !u!114 &2727140861954473522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
