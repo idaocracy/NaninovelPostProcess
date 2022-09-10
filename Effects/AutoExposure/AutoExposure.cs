@@ -1,5 +1,7 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,6 @@ using UnityEditor;
 
 namespace NaninovelPostProcessFX
 {
-
     [RequireComponent(typeof(PostProcessVolume))]
     public class AutoExposure : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
@@ -276,3 +277,5 @@ namespace NaninovelPostProcessFX
     #endif
 
 }
+
+#endif

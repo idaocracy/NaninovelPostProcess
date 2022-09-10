@@ -1,4 +1,6 @@
 ﻿//2022 idaocracy
+#if UNITY_POST_PROCESSING_STACK_V2
+
 
 using System.Collections.Generic;
 using System.Linq;
@@ -166,7 +168,7 @@ namespace NaninovelPostProcessFX {
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(ChromaticAberration))]
     public class CopyFXChromaticAberration : Editor
@@ -217,6 +219,8 @@ namespace NaninovelPostProcessFX {
         private string CreateString() => "(time)," + volume.weight + "," + chromaticAberration.spectralLut.value?.name + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
     }
 
-    #endif
+#endif
 
 }
+
+#endif

@@ -1,5 +1,8 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -438,7 +441,7 @@ namespace NaninovelPostProcessFX {
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(ColorGrading))]
     public class CopyFXColorGrading : Editor
@@ -497,6 +500,8 @@ namespace NaninovelPostProcessFX {
                 colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
                 colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
     }
-    #endif
+#endif
 
 }
+
+#endif

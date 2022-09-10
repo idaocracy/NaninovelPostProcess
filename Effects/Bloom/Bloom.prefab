@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2614796084570639616}
   - component: {fileID: 7018614623841673359}
-  - component: {fileID: 2881204084554943049}
+  - component: {fileID: 624958787489417217}
   m_Layer: 8
   m_Name: Bloom
   m_TagString: Untagged
@@ -49,7 +49,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &2881204084554943049
+--- !u!114 &624958787489417217
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,7 +58,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2261174484603219885}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5275bc2e1e4ecf144a5237238b0eecc5, type: 3}
+  m_Script: {fileID: 11500000, guid: 95b0e5f3647c24d41a2903c1475d8507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
@@ -73,6 +73,5 @@ MonoBehaviour:
   defaultFastMode: 0
   defaultDirtTextureId: 
   defaultDirtIntensity: 0
-  defaultFadeOutDuration: 0
-  dirtTextures:
-  - {fileID: 2800000, guid: 0f4979b91c2d36643985779d0febf485, type: 3}
+  defaultFadeOutDuration: 0.35
+  dirtTextures: []

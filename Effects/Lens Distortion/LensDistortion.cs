@@ -1,4 +1,5 @@
 ﻿//2022 idaocracy
+#if UNITY_POST_PROCESSING_STACK_V2
 
 using System.Collections.Generic;
 using System.Linq;
@@ -214,7 +215,7 @@ namespace NaninovelPostProcessFX {
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(LensDistortion))]
     public class CopyFXLensDistortion : Editor
@@ -268,6 +269,8 @@ namespace NaninovelPostProcessFX {
                   lensDistortion.centerY.value + "," + lensDistortion.scale.value;
     }
 
-    #endif
+#endif
 
 }
+
+#endif

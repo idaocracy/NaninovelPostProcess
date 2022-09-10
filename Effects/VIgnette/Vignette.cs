@@ -1,5 +1,7 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -307,7 +309,7 @@ namespace NaninovelPostProcessFX {
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(Vignette))]
     public class CopyFXVignette : Editor
@@ -371,6 +373,8 @@ namespace NaninovelPostProcessFX {
         }
     }
 
-    #endif
+#endif
 
 }
+
+#endif

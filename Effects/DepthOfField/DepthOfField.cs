@@ -1,5 +1,7 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -179,7 +181,7 @@ namespace NaninovelPostProcessFX {
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(DepthOfField))]
     public class CopyFXDoF : Editor
@@ -232,6 +234,8 @@ namespace NaninovelPostProcessFX {
         private string CreateString() => "(time)," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
     }
 
-    #endif
+#endif
 
 }
+
+#endif

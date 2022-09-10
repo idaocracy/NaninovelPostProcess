@@ -1,5 +1,8 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -270,7 +273,7 @@ namespace NaninovelPostProcessFX
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(Bloom))]
     public class CopyFXBloom : Editor
@@ -322,6 +325,8 @@ namespace NaninovelPostProcessFX
                   bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + bloom.color.value + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
     }
 
-    #endif
+#endif
 
 }
+
+#endif

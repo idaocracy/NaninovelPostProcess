@@ -1,5 +1,7 @@
 ﻿//2022 idaocracy
 
+#if UNITY_POST_PROCESSING_STACK_V2
+
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -176,7 +178,7 @@ namespace NaninovelPostProcessFX
     }
 
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomEditor(typeof(Grain))]
     public class CopyFXGrain : Editor
@@ -229,6 +231,8 @@ namespace NaninovelPostProcessFX
         private string CreateString() => "(time)," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value + "]";
     }
 
-    #endif
+#endif
 
 }
+
+#endif
