@@ -1,7 +1,6 @@
 ﻿//2022 idaocracy
 #if UNITY_POST_PROCESSING_STACK_V2
 
-
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,7 +13,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class ChromaticAberration : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -27,23 +26,24 @@ namespace NaninovelPostProcessFX {
 
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
-
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+        [Header("Chromatic Aberration Settings")]
         [SerializeField] private string defaultSpectralLutId = string.Empty;
+        [SerializeField] private List<Texture> spectralLuts = new List<Texture>();
         [SerializeField] private float defaultIntensity = 1f;
         [SerializeField] private bool defaultFastMode = false;
-
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.ChromaticAberration chromaticAberration;
 
-        [SerializeField] private List<Texture> spectralLuts = new List<Texture>();
         [SerializeField] private List<string> spectralLutsId = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
@@ -110,21 +110,23 @@ namespace NaninovelPostProcessFX {
             else volume.weight = volumeWeight;
         }
 
-        private async UniTask ChangeIntensityAsync(float shutterAngle, float duration, AsyncToken asyncToken = default)
+        private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await intensityTweener.RunAsync(new FloatTween(chromaticAberration.intensity.value, Intensity, duration, x => chromaticAberration.intensity.value = x), asyncToken, chromaticAberration);
-            else chromaticAberration.intensity.value = shutterAngle;
+            else chromaticAberration.intensity.value = intensity;
         }
 
         private void ChangeTexture(string imageId)
         {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) return;
-
-            foreach (var img in spectralLuts)
+            if (imageId == "None" || String.IsNullOrEmpty(imageId)) chromaticAberration.spectralLut.value = null;
+            else
             {
-                if(img != null && img.name == imageId)
+                foreach (var img in spectralLuts)
                 {
-                    chromaticAberration.spectralLut.value = img;
+                    if (img != null && img.name == imageId)
+                    {
+                        chromaticAberration.spectralLut.value = img;
+                    }
                 }
             }
         }
@@ -134,13 +136,6 @@ namespace NaninovelPostProcessFX {
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Test", GUILayout.Width(413)))
-            {
-                Selection.activeGameObject = this.gameObject;
-            }
-            GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
@@ -187,14 +182,13 @@ namespace NaninovelPostProcessFX {
         private ChromaticAberration targetObject;
         private UnityEngine.Rendering.PostProcessing.ChromaticAberration chromaticAberration;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (ChromaticAberration)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             chromaticAberration = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ChromaticAberration>();
-            logResult = targetObject.logResult;
         }
 
         public override void OnInspectorGUI()
@@ -205,26 +199,26 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]"; 
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (chromaticAberration != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString() => "(time)," + volume.weight + "," + chromaticAberration.spectralLut.value?.name + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();

@@ -14,7 +14,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX 
+namespace NaninovelPostProcess 
 { 
 
     [RequireComponent(typeof(PostProcessVolume))]
@@ -29,20 +29,23 @@ namespace NaninovelPostProcessFX
 
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
+
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> sizeTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> luminanceContributionTweener = new Tweener<FloatTween>();
 
-        [SerializeField] private bool defaultColored = true;
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+        [Header("Grain Settings")]
+        [SerializeField] private bool defaultColored = true;
         [SerializeField] private float defaultIntensity = 0f;
         [SerializeField] private float defaultSize = 1f;
         [SerializeField] private float defaultluminanceContribution = 0.8f;
-
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
@@ -189,14 +192,13 @@ namespace NaninovelPostProcessFX
         private Grain targetObject;
         private UnityEngine.Rendering.PostProcessing.Grain grain;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (Grain)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             grain = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Grain>();
-            logResult = targetObject.logResult;
         }
 
         public override void OnInspectorGUI()
@@ -207,15 +209,15 @@ namespace NaninovelPostProcessFX
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (grain != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
 
-            if (GUILayout.Button("Copy command and params ([)", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (grain != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -223,15 +225,15 @@ namespace NaninovelPostProcessFX
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (grain != null) CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
-        private string CreateString() => "(time)," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value + "]";
+        private string CreateString() => "(time)," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
     }
 
 #endif

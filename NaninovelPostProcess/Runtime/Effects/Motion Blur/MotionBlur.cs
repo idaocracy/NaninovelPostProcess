@@ -14,7 +14,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class MotionBlur : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -26,16 +26,20 @@ namespace NaninovelPostProcessFX {
 
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
+
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> shutterAngleTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> sampleCountTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
-        [SerializeField] private float defaultFocusDistance = 0.1f;
-
+        [Header("Motion Blur Settings")]
+        [SerializeField] private float defaultShutterAngle = 270f;
+        [SerializeField] private float defaultSampleCount = 10f;
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
@@ -46,7 +50,8 @@ namespace NaninovelPostProcessFX {
             Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
 
             VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            ShutterAngle = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultFocusDistance;
+            ShutterAngle = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultShutterAngle;
+            SampleCount = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultSampleCount;
         }
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
@@ -158,14 +163,14 @@ namespace NaninovelPostProcessFX {
         private MotionBlur targetObject;
         private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (MotionBlur)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             motionBlur = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>();
-            logResult = targetObject.logResult;
+
         }
 
         public override void OnInspectorGUI()
@@ -176,26 +181,26 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (motionBlur != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (motionBlur != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]"; 
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (motionBlur != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString() => "(time)," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;

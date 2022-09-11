@@ -2,7 +2,6 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +13,8 @@ using Naninovel.Commands;
 using UnityEditor;
 #endif
 
-namespace NaninovelPostProcessFX
+namespace NaninovelPostProcess
 {
-
     [RequireComponent(typeof(PostProcessVolume))]
     public class Bloom : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
@@ -34,7 +32,7 @@ namespace NaninovelPostProcessFX
         protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
+
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
@@ -46,8 +44,14 @@ namespace NaninovelPostProcessFX
         private readonly Tweener<ColorTween> tintTweener = new Tweener<ColorTween>();
         private readonly Tweener<FloatTween> dirtIntensityTweener = new Tweener<FloatTween>();
 
+
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+
+        [Header("Bloom Settings")]
         [SerializeField] private float defaultIntensity = 10f;
         [SerializeField] private float defaultThreshold = 1f;
         [SerializeField] private float defaultSoftKnee = 0.5f;
@@ -58,14 +62,15 @@ namespace NaninovelPostProcessFX
         [SerializeField] private bool defaultFastMode= false;
 
         [SerializeField] private string defaultDirtTextureId = string.Empty;
+        [SerializeField] private List<Texture> dirtTextures = new List<Texture>();
         [SerializeField] private float defaultDirtIntensity = 0f;
 
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.Bloom bloom;
 
-        [SerializeField] private List<Texture> dirtTextures = new List<Texture>();
         private List<string> dirtTextureIds = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
@@ -190,13 +195,15 @@ namespace NaninovelPostProcessFX
 
         private void ChangeTexture(string imageId)
         {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) return;
-
-            foreach (var img in dirtTextures)
+            if (imageId == "None" || String.IsNullOrEmpty(imageId)) bloom.dirtTexture.value = null;
+            else
             {
-                if (img != null && img.name == imageId)
+                foreach (var img in dirtTextures)
                 {
-                    bloom.dirtTexture.value = img;
+                    if (img != null && img.name == imageId)
+                    {
+                        bloom.dirtTexture.value = img;
+                    }
                 }
             }
         }
@@ -268,7 +275,7 @@ namespace NaninovelPostProcessFX
             bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + bloom.threshold.value + "," + bloom.intensity.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
+            return Duration + "," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
                   bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
 
         }
@@ -285,14 +292,13 @@ namespace NaninovelPostProcessFX
         private Bloom targetObject;
         private UnityEngine.Rendering.PostProcessing.Bloom bloom;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (Bloom)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             bloom = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Bloom>();
-            logResult = targetObject.logResult;
         }
 
         public override void OnInspectorGUI()
@@ -303,30 +309,30 @@ namespace NaninovelPostProcessFX
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (bloom != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (bloom != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (bloom != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
-        private string CreateString() => "(time)," + volume.weight + "," + bloom.threshold.value + "," + bloom.intensity.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
-                  bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + bloom.color.value + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
+        private string CreateString() => "(time)," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
+                  bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
     }
 
 #endif

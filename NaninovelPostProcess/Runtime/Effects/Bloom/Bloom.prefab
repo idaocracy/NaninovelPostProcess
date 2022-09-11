@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 2614796084570639616}
   - component: {fileID: 7018614623841673359}
-  - component: {fileID: 4147369095396762139}
-  - component: {fileID: 4717744854929994854}
+  - component: {fileID: 624958787489417217}
+  - component: {fileID: 3548116257828062552}
   m_Layer: 8
-  m_Name: ColorGrading
+  m_Name: Bloom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -50,7 +50,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &4147369095396762139
+--- !u!114 &624958787489417217
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -59,30 +59,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 2261174484603219885}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d98dc871a166914e8597bafe78f689e, type: 3}
+  m_Script: {fileID: 11500000, guid: 95b0e5f3647c24d41a2903c1475d8507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  logResult: 0
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultMode: Low Definition Range
-  defaultTemperature: 0
-  defaultTint: 0
-  defaultPostExposure: 0
-  defaultColorFilter: {r: 1, g: 1, b: 1, a: 1}
-  defaultHueShift: 0
-  defaultSaturation: 0
-  defaultContrast: 0
-  defaultRedChannel: {x: 100, y: 0, z: 0}
-  defaultGreenChannel: {x: 0, y: 100, z: 0}
-  defaultBlueChannel: {x: 0, y: 0, z: 100}
-  defaultLift: {x: 1, y: 1, z: 1, w: 0}
-  defaultGamma: {x: 1, y: 1, z: 1, w: 0}
-  defaultGain: {x: 1, y: 1, z: 1, w: 0}
-  defaultLookUpTexture: None
+  defaultIntensity: 10
+  defaultThreshold: 1
+  defaultSoftKnee: 0.5
+  defaultClamp: 65472
+  defaultDiffusion: 7
+  defaultAnamorphicRatio: 0
+  defaultColor: {r: 1, g: 1, b: 1, a: 1}
+  defaultFastMode: 0
+  defaultDirtTextureId: 
+  dirtTextures:
+  - {fileID: 2800000, guid: 0f4979b91c2d36643985779d0febf485, type: 3}
+  defaultDirtIntensity: 0
   defaultFadeOutDuration: 0.35
-  lookUpTextures: []
---- !u!114 &4717744854929994854
+--- !u!114 &3548116257828062552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

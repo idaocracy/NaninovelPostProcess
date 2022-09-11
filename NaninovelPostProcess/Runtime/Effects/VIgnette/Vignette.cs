@@ -14,7 +14,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class Vignette : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -34,10 +34,7 @@ namespace NaninovelPostProcessFX {
         //Mask parameters
         protected string Mask { get; private set; }
         protected float Opacity { get; private set; }
-
         protected float FadeOutDuration { get; private set; }
-
-        public bool logResult { get; set; }
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<ColorTween> colorTweener = new Tweener<ColorTween>();
@@ -47,9 +44,12 @@ namespace NaninovelPostProcessFX {
         private readonly Tweener<FloatTween> roundnessTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> opacityTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
 
+        [Header("Vignette Settings")]
         [SerializeField] private string defaultMode = "Masked";
         [SerializeField] private Color defaultColor = Color.black;
 
@@ -62,15 +62,15 @@ namespace NaninovelPostProcessFX {
 
         //Masked parameters
         [SerializeField] private string defaultMask = string.Empty;
+        [SerializeField] private List<Texture> maskTextures = new List<Texture>();
         [SerializeField] private float defaultOpacity = 1f;
 
-
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.Vignette vignette;
 
-        [SerializeField] private List<Texture> maskTextures = new List<Texture>();
         private List<string> maskTextureIds = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
@@ -216,13 +216,15 @@ namespace NaninovelPostProcessFX {
 
         private void ChangeTexture(string imageId)
         {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) return;
-
-            foreach (var img in maskTextures)
+            if (imageId == "None" || String.IsNullOrEmpty(imageId)) vignette.mask.value = null;
+            else
             {
-                if (img != null && img.name == imageId)
+                foreach (var img in maskTextures)
                 {
-                    vignette.mask.value = img;
+                    if (img != null && img.name == imageId)
+                    {
+                        vignette.mask.value = img;
+                    }
                 }
             }
         }
@@ -320,14 +322,14 @@ namespace NaninovelPostProcessFX {
         private Vignette targetObject;
         private UnityEngine.Rendering.PostProcessing.Vignette vignette;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (Vignette)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             vignette = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Vignette>();
-            logResult = targetObject.logResult;
+
         }
 
         public override void OnInspectorGUI()
@@ -338,7 +340,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (vignette != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -346,7 +348,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (vignette != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -354,12 +356,12 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (vignette != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString()
@@ -367,7 +369,7 @@ namespace NaninovelPostProcessFX {
             if (vignette.mode.value.ToString() == "Classic")
             {
                 return "(time)," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
-                          vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value;
+                          vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
             }
             else
             {

@@ -13,7 +13,7 @@ using Naninovel.Commands;
 using UnityEditor;
 #endif
 
-namespace NaninovelPostProcessFX
+namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
     public class AutoExposure : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -29,7 +29,7 @@ namespace NaninovelPostProcessFX
         protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
+
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<VectorTween> filteringTweener = new Tweener<VectorTween>();
@@ -39,8 +39,12 @@ namespace NaninovelPostProcessFX
         private readonly Tweener<FloatTween> speedUpTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> speedDownTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+
+        [Header("Auto Exposure Settings")]
         [SerializeField] private Vector2 defaultFiltering = new Vector2(50f,95f);
         [SerializeField] private float defaultMinimum = 0f;
         [SerializeField] private float defaultMaximum = 0f;
@@ -49,6 +53,7 @@ namespace NaninovelPostProcessFX
         [SerializeField] private float defaultSpeedUp = 2f;
         [SerializeField] private float defaultSpeedDown = 1f;
 
+        [Header("Despawn/Fadeout settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
@@ -89,7 +94,7 @@ namespace NaninovelPostProcessFX
             if (autoExposure.keyValue.value != exposureCompensation) tasks.Add(ChangeExposureCompensationAsync(exposureCompensation, duration, asyncToken));
             autoExposure.eyeAdaptation.value = (EyeAdaptation)System.Enum.Parse(typeof(EyeAdaptation), type);
 
-            if(autoExposure.eyeAdaptation.value.ToString() == "Progressive") { 
+            if(type == "Progressive") { 
                 if (autoExposure.speedUp.value != speedUp) tasks.Add(ChangeSpeedUpAsync(speedUp, duration, asyncToken));
                 if (autoExposure.speedDown.value != speedDown) tasks.Add(ChangeSpeedDownAsync(speedDown, duration, asyncToken));
             }
@@ -215,7 +220,7 @@ namespace NaninovelPostProcessFX
             }
 
             return Duration + "," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
-                  autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
+                  autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
         }
 
 #endif
@@ -230,52 +235,48 @@ namespace NaninovelPostProcessFX
         private AutoExposure targetObject;
         private UnityEngine.Rendering.PostProcessing.AutoExposure autoExposure;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (AutoExposure)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             autoExposure = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.AutoExposure>();
-            logResult = targetObject.logResult;
+
         }
 
         public override void OnInspectorGUI()
         {
             base.DrawDefaultInspector();
-            var targetObject = (AutoExposure)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            autoExposure = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.AutoExposure>();
-            logResult = targetObject.logResult;
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (autoExposure != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (autoExposure != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (autoExposure != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString() => "(time)," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
-                  autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
+                  autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
     }
 
     #endif

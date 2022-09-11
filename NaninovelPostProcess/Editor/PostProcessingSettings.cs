@@ -1,25 +1,24 @@
 ﻿#if UNITY_POST_PROCESSING_STACK_V2
+
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Naninovel;
 
-namespace NaninovelPostProcessFX
+namespace NaninovelPostProcess
 {
     public class PostProcessingSettings : ConfigurationSettings<PostProcessingConfiguration>
     {
-
         protected override Dictionary<string, Action<SerializedProperty>> OverrideConfigurationDrawers ()
         {
             var drawers = base.OverrideConfigurationDrawers();
-            drawers[nameof(PostProcessingConfiguration.Layer)] = l =>
+            drawers[nameof(PostProcessingConfiguration.PostProcessingLayer)] = l =>
             {
-                if (!Configuration.OverrideObjectsAndCameraLayer) return;
+                if (!Configuration.OverrideObjectsLayer) return;
                 var label = EditorGUI.BeginProperty(Rect.zero, null, l);
                 l.intValue = EditorGUILayout.LayerField(label, l.intValue);
             };
-
 
             drawers[nameof(PostProcessingConfiguration.PostProcessResources)] = p => {
                 DrawWhen(Configuration.AddPostProcessLayerToCamera, p);

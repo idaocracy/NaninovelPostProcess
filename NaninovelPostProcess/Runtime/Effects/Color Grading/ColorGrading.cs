@@ -14,7 +14,7 @@ using Naninovel.Commands;
 using UnityEditor;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class ColorGrading : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -22,6 +22,7 @@ namespace NaninovelPostProcessFX {
         protected string Mode { get; private set; }
 
         //Non-external parameters
+        protected float Contribution { get; private set; }
         protected float Temperature { get; private set; }
         protected float Tint { get; private set; }
         protected float PostExposure { get; private set; }
@@ -37,14 +38,13 @@ namespace NaninovelPostProcessFX {
         protected Vector4 Gain { get; private set; }
 
         //External parameters
-
         protected string LookUpTexture { get; private set; }
 
         protected float VolumeWeight { get; private set; }
         protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult;
+        public bool LogResult;
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> temperatureTweener = new Tweener<FloatTween>();
@@ -60,13 +60,21 @@ namespace NaninovelPostProcessFX {
         private readonly Tweener<VectorTween> liftTweener = new Tweener<VectorTween>();
         private readonly Tweener<VectorTween> gammaTweener = new Tweener<VectorTween>();
         private readonly Tweener<VectorTween> gainTweener = new Tweener<VectorTween>();
+        private readonly Tweener<FloatTween> contributionTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+        [Header("Color Grading Settings")]
         [SerializeField] private string defaultMode = "Low Definition Range";
+        [SerializeField] private string defaultLookUpTexture = "None";
+        [SerializeField] private List<Texture> lookUpTextures = new List<Texture>();
+        [SerializeField] private float defaultContribution = 1f;
         [SerializeField] private float defaultTemperature = 0f;
         [SerializeField] private float defaultTint = 0f;
         [SerializeField] private float defaultPostExposure = 0f;
+        [ColorUsage(false, true)]
         [SerializeField] private Color defaultColorFilter = Color.white;
         [SerializeField] private float defaultHueShift = 0f;
         [SerializeField] private float defaultSaturation = 0f;
@@ -78,14 +86,12 @@ namespace NaninovelPostProcessFX {
         [SerializeField] private Vector4 defaultGamma = new Vector4(1f, 1f, 1f, 0f);
         [SerializeField] private Vector4 defaultGain = new Vector4(1f, 1f, 1f, 0f);
 
-        [SerializeField] private string defaultLookUpTexture = "None";
-
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
 
-        [SerializeField] private List<Texture> lookUpTextures = new List<Texture>();
         private List<string> lookUpTextureIds = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
@@ -93,9 +99,9 @@ namespace NaninovelPostProcessFX {
             Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
 
             VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            Mode = parameters?.ElementAtOrDefault(2)?.ToString() ?? defaultMode;
+            Mode = parameters?.ElementAtOrDefault(2) ?? defaultMode;
 
-            if (Mode != "External") 
+            if (Mode == "High Definition Range" || Mode == "HighDefinitionRange") 
             { 
                 Temperature = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultTemperature;
                 Tint = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultTint;
@@ -132,6 +138,45 @@ namespace NaninovelPostProcessFX {
                             parameters?.ElementAtOrDefault(29)?.AsInvariantFloat() ?? defaultGain.z,
                             parameters?.ElementAtOrDefault(30)?.AsInvariantFloat() ?? defaultGain.w);
             }
+            else if(Mode == "Low Definition Range" || Mode == "LowDefinitionRange")
+            {
+                LookUpTexture = parameters?.ElementAtOrDefault(3) ?? defaultLookUpTexture;
+                Contribution = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultContribution;
+                Temperature = parameters?.ElementAtOrDefault(5)?.AsInvariantFloat() ?? defaultTemperature;
+                Tint = parameters?.ElementAtOrDefault(6)?.AsInvariantFloat() ?? defaultTint;
+                PostExposure = parameters?.ElementAtOrDefault(7)?.AsInvariantFloat() ?? defaultPostExposure;
+                ColorFilter = ColorUtility.TryParseHtmlString(parameters?.ElementAtOrDefault(8)?.ToString(), out var colorFilter) ? colorFilter : defaultColorFilter;
+                HueShift = parameters?.ElementAtOrDefault(9)?.AsInvariantFloat() ?? defaultHueShift;
+                Saturation = parameters?.ElementAtOrDefault(10)?.AsInvariantFloat() ?? defaultSaturation;
+                Contrast = parameters?.ElementAtOrDefault(11)?.AsInvariantFloat() ?? defaultContrast;
+
+                RedChannel = new Vector3(parameters?.ElementAtOrDefault(12)?.AsInvariantFloat() ?? defaultRedChannel.x,
+                            parameters?.ElementAtOrDefault(13)?.AsInvariantFloat() ?? defaultRedChannel.y,
+                            parameters?.ElementAtOrDefault(14)?.AsInvariantFloat() ?? defaultRedChannel.z);
+
+                GreenChannel = new Vector3(parameters?.ElementAtOrDefault(15)?.AsInvariantFloat() ?? defaultGreenChannel.x,
+                            parameters?.ElementAtOrDefault(16)?.AsInvariantFloat() ?? defaultGreenChannel.y,
+                            parameters?.ElementAtOrDefault(17)?.AsInvariantFloat() ?? defaultGreenChannel.z);
+
+                BlueChannel = new Vector3(parameters?.ElementAtOrDefault(18)?.AsInvariantFloat() ?? defaultBlueChannel.x,
+                            parameters?.ElementAtOrDefault(19)?.AsInvariantFloat() ?? defaultBlueChannel.y,
+                            parameters?.ElementAtOrDefault(20)?.AsInvariantFloat() ?? defaultBlueChannel.z);
+
+                Lift = new Vector4(parameters?.ElementAtOrDefault(21)?.AsInvariantFloat() ?? defaultLift.x,
+                            parameters?.ElementAtOrDefault(22)?.AsInvariantFloat() ?? defaultLift.y,
+                            parameters?.ElementAtOrDefault(23)?.AsInvariantFloat() ?? defaultLift.z,
+                            parameters?.ElementAtOrDefault(24)?.AsInvariantFloat() ?? defaultLift.w);
+
+                Gamma = new Vector4(parameters?.ElementAtOrDefault(25)?.AsInvariantFloat() ?? defaultGamma.x,
+                            parameters?.ElementAtOrDefault(26)?.AsInvariantFloat() ?? defaultGamma.y,
+                            parameters?.ElementAtOrDefault(27)?.AsInvariantFloat() ?? defaultGamma.z,
+                            parameters?.ElementAtOrDefault(28)?.AsInvariantFloat() ?? defaultGamma.w);
+
+                Gain = new Vector4(parameters?.ElementAtOrDefault(29)?.AsInvariantFloat() ?? defaultGain.x,
+                            parameters?.ElementAtOrDefault(30)?.AsInvariantFloat() ?? defaultGain.y,
+                            parameters?.ElementAtOrDefault(31)?.AsInvariantFloat() ?? defaultGain.z,
+                            parameters?.ElementAtOrDefault(32)?.AsInvariantFloat() ?? defaultGain.w);
+            }
             else
             {
                 LookUpTexture = parameters?.ElementAtOrDefault(3) ?? defaultLookUpTexture;
@@ -143,11 +188,10 @@ namespace NaninovelPostProcessFX {
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
 
             var duration = asyncToken.Completed ? 0 : Duration;
-            if (Mode != "External") await ChangeColorGradingAsync(duration, VolumeWeight, Mode, Temperature, Tint, PostExposure, ColorFilter, HueShift, Saturation, Contrast, RedChannel, GreenChannel, BlueChannel, Lift, Gamma, Gain, asyncToken);
-            else await ChangeLookUpTextureAsync(duration, VolumeWeight, Mode, LookUpTexture, asyncToken);
+            await ChangeColorGradingAsync(duration, VolumeWeight, Mode, Contribution, LookUpTexture, Temperature, Tint, PostExposure, ColorFilter, HueShift, Saturation, Contrast, RedChannel, GreenChannel, BlueChannel, Lift, Gamma, Gain, asyncToken);
         }
 
-        public async UniTask ChangeColorGradingAsync(float duration, float volumeWeight, string mode, float temperature, float tint,
+        public async UniTask ChangeColorGradingAsync(float duration, float volumeWeight, string mode, float contribution, string lookUpTexture, float temperature, float tint,
                                                     float postExposure, Color colorFilter, float hueShift, float saturation, float contrast,
                                                     Vector3 redChannel, Vector3 blueChannel, Vector3 greenChannel,
                                                     Vector4 lift, Vector4 gamma, Vector4 gain,
@@ -155,31 +199,37 @@ namespace NaninovelPostProcessFX {
         {
 
             var tasks = new List<UniTask>();
+
             if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             colorGrading.gradingMode.value = (GradingMode)System.Enum.Parse(typeof(GradingMode), mode.Replace(" ", ""));
-            if (colorGrading.temperature.value != temperature) tasks.Add(ChangeTemperatureAsync(temperature, duration, asyncToken));
-            if (colorGrading.tint.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
-            if (colorGrading.postExposure.value != postExposure) tasks.Add(ChangePostExposureAsync(postExposure, duration, asyncToken));
-            if (colorGrading.colorFilter.value != colorFilter) tasks.Add(ChangeColorFilterAsync(colorFilter, duration, asyncToken));
-            if (colorGrading.hueShift.value != hueShift) tasks.Add(ChangeHueShiftAsync(hueShift, duration, asyncToken));
-            if (colorGrading.saturation.value != saturation) tasks.Add(ChangeSaturationAsync(saturation, duration, asyncToken));
-            if (colorGrading.contrast.value != tint) tasks.Add(ChangeContrastAsync(contrast, duration, asyncToken));
-            if (GetRedChannel() != redChannel) tasks.Add(ChangeRedChannelAsync(redChannel, duration, asyncToken));
-            if (GetGreenChannel() != redChannel) tasks.Add(ChangeGreenChannelAsync(blueChannel, duration, asyncToken));
-            if (GetBlueChannel() != redChannel) tasks.Add(ChangeBlueChannelAsync(blueChannel, duration, asyncToken));
-            if (colorGrading.lift.value != lift) tasks.Add(ChangeLiftAsync(lift, duration, asyncToken));
-            if (colorGrading.gamma.value != lift) tasks.Add(ChangeGammaAsync(gamma, duration, asyncToken));
-            if (colorGrading.gain.value != gain) tasks.Add(ChangeGainAsync(gain, duration, asyncToken));
 
-            await UniTask.WhenAll(tasks);
-        }
+            if (mode != "External")
+            {
 
-        public async UniTask ChangeLookUpTextureAsync(float duration, float volumeWeight, string mode, string lookUpTexture, AsyncToken asyncToken)
-        {
-            var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            colorGrading.gradingMode.value = (GradingMode)System.Enum.Parse(typeof(GradingMode), mode);
-            if (colorGrading.externalLut.value.ToString() != mode) ChangeTexture(lookUpTexture);
+                if (mode == "LowDefinitionRange")
+                {
+                    if (colorGrading.ldrLutContribution.value != contribution) tasks.Add(ChangeContributionAsync(volumeWeight, duration, asyncToken));
+                    if (colorGrading.ldrLut.value?.name != lookUpTexture) ChangeTexture(lookUpTexture);
+                }
+
+                if (colorGrading.temperature.value != temperature) tasks.Add(ChangeTemperatureAsync(temperature, duration, asyncToken));
+                if (colorGrading.tint.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
+                if (colorGrading.postExposure.value != postExposure) tasks.Add(ChangePostExposureAsync(postExposure, duration, asyncToken));
+                if (colorGrading.colorFilter.value != colorFilter) tasks.Add(ChangeColorFilterAsync(colorFilter, duration, asyncToken));
+                if (colorGrading.hueShift.value != hueShift) tasks.Add(ChangeHueShiftAsync(hueShift, duration, asyncToken));
+                if (colorGrading.saturation.value != saturation) tasks.Add(ChangeSaturationAsync(saturation, duration, asyncToken));
+                if (colorGrading.contrast.value != tint) tasks.Add(ChangeContrastAsync(contrast, duration, asyncToken));
+                if (GetRedChannel() != redChannel) tasks.Add(ChangeRedChannelAsync(redChannel, duration, asyncToken));
+                if (GetGreenChannel() != redChannel) tasks.Add(ChangeGreenChannelAsync(blueChannel, duration, asyncToken));
+                if (GetBlueChannel() != redChannel) tasks.Add(ChangeBlueChannelAsync(blueChannel, duration, asyncToken));
+                if (colorGrading.lift.value != lift) tasks.Add(ChangeLiftAsync(lift, duration, asyncToken));
+                if (colorGrading.gamma.value != lift) tasks.Add(ChangeGammaAsync(gamma, duration, asyncToken));
+                if (colorGrading.gain.value != gain) tasks.Add(ChangeGainAsync(gain, duration, asyncToken));
+            }
+            else
+            {
+                if (colorGrading.externalLut.value.ToString() != mode) ChangeTexture(lookUpTexture);
+            }
 
             await UniTask.WhenAll(tasks);
         }
@@ -192,10 +242,8 @@ namespace NaninovelPostProcessFX {
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-
         }
 
         public void OnDestroy()
@@ -206,10 +254,9 @@ namespace NaninovelPostProcessFX {
         private void Awake()
         {
             volume = GetComponent<PostProcessVolume>();
-                colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
+            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
             colorGrading.SetAllOverridesTo(true);
             volume.weight = 0f;
-
             lookUpTextureIds = lookUpTextures.Select(s => s.name).ToList();
             lookUpTextureIds.Insert(0, "None");
         }
@@ -218,6 +265,11 @@ namespace NaninovelPostProcessFX {
         {
             if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
             else volume.weight = volumeWeight;
+        }
+        private async UniTask ChangeContributionAsync(float contribution, float duration, AsyncToken asyncToken = default)
+        {
+            if (duration > 0) await contributionTweener.RunAsync(new FloatTween(colorGrading.ldrLutContribution.value, contribution, duration, x => colorGrading.ldrLutContribution.value = x), asyncToken, colorGrading);
+            else colorGrading.ldrLutContribution.value = contribution;
         }
         private async UniTask ChangeTemperatureAsync(float temperature, float duration, AsyncToken asyncToken = default)
         {
@@ -229,7 +281,6 @@ namespace NaninovelPostProcessFX {
             if (duration > 0) await tintTweener.RunAsync(new FloatTween(colorGrading.tint.value, tint, duration, x => colorGrading.tint.value = x), asyncToken, colorGrading);
             else colorGrading.tint.value = tint;
         }
-
         private async UniTask ChangePostExposureAsync(float postExposure, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await postExposureTweener.RunAsync(new FloatTween(colorGrading.postExposure.value, postExposure, duration, x => colorGrading.postExposure.value = x), asyncToken, colorGrading);
@@ -255,31 +306,26 @@ namespace NaninovelPostProcessFX {
             if (duration > 0) await contrastTweener.RunAsync(new FloatTween(colorGrading.contrast.value, contrast, duration, x => colorGrading.contrast.value = x), asyncToken, colorGrading);
             else colorGrading.contrast.value = contrast;
         }
-
         private async UniTask ChangeRedChannelAsync(Vector3 red, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await redChannelTweener.RunAsync(new VectorTween(GetRedChannel(), red, duration, ApplyRedChannel), asyncToken, colorGrading);
             else ApplyRedChannel(red);
         }
-
         private async UniTask ChangeGreenChannelAsync(Vector3 green, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await greenChannelTweener.RunAsync(new VectorTween(GetBlueChannel(), green, duration, ApplyBlueChannel), asyncToken, colorGrading);
             else ApplyBlueChannel(green);
         }
-
         private async UniTask ChangeBlueChannelAsync(Vector3 blue, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await blueChannelTweener.RunAsync(new VectorTween(GetGreenChannel(), blue, duration, ApplyChannelMixerB), asyncToken, colorGrading);
             else ApplyBlueChannel(blue);
         }
-
         private async UniTask ChangeLiftAsync(Vector4 lift, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await liftTweener.RunAsync(new VectorTween(colorGrading.lift.value, lift, duration, x => colorGrading.lift.value = x), asyncToken, colorGrading);
             else colorGrading.lift.value = lift;
         }
-
         private async UniTask ChangeGammaAsync(Vector4 gamma, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await gammaTweener.RunAsync(new VectorTween(colorGrading.gamma.value, gamma, duration, x => colorGrading.gamma.value = x), asyncToken, colorGrading);
@@ -293,15 +339,23 @@ namespace NaninovelPostProcessFX {
 
         private void ChangeTexture(string imageId)
         {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) return;
-
-            foreach (var img in lookUpTextures)
+            if (imageId == "None" || String.IsNullOrEmpty(imageId))
             {
-                if (img != null && img.name == imageId)
+                 colorGrading.ldrLut.value = null;
+                 colorGrading.externalLut.value = null;
+            }
+            else
+            {
+                foreach (var img in lookUpTextures)
                 {
-                    colorGrading.externalLut.value = img;
+                    if (img != null && img.name == imageId)
+                    {
+                        if (colorGrading.ldrLut.value.ToString() == "External") colorGrading.ldrLut.value = img;
+                        if (colorGrading.gradingMode.value.ToString() == "External") colorGrading.externalLut.value = img;
+                    }
                 }
             }
+
         }
 
         private Vector3 GetRedChannel() => new Vector3(colorGrading.mixerRedOutRedIn.value, colorGrading.mixerRedOutGreenIn.value, colorGrading.mixerRedOutBlueIn.value);
@@ -332,6 +386,7 @@ namespace NaninovelPostProcessFX {
 #if UNITY_EDITOR
         public string SceneAssistantParameters()
         {
+            EditorGUIUtility.labelWidth = 190;
 
             GUILayout.BeginHorizontal();
             Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
@@ -351,6 +406,22 @@ namespace NaninovelPostProcessFX {
             GUILayout.EndHorizontal();
 
             if(colorGrading.gradingMode.value.ToString() != "External") { 
+
+                if(colorGrading.gradingMode.value.ToString() == "LowDefinitionRange")
+                {
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Lookup Texture", GUILayout.Width(190));
+                    string[] maskTexturesArray = lookUpTextureIds.ToArray();
+                    var maskIndex = Array.IndexOf(maskTexturesArray, colorGrading.ldrLut.value?.name ?? "None");
+                    maskIndex = EditorGUILayout.Popup(maskIndex, maskTexturesArray, GUILayout.Height(20), GUILayout.Width(220));
+                    colorGrading.ldrLut.value = lookUpTextures.FirstOrDefault(s => s.name == lookUpTextureIds[maskIndex]) ?? null;
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Contribution", GUILayout.Width(190));
+                    volume.weight = EditorGUILayout.Slider(colorGrading.ldrLutContribution.value, 0f, 1f, GUILayout.Width(220));
+                    GUILayout.EndHorizontal();
+                }
 
                 GUILayout.BeginHorizontal();
                 colorGrading.temperature.value = EditorGUILayout.FloatField("Temperature", colorGrading.temperature.value, GUILayout.Width(413));
@@ -383,23 +454,23 @@ namespace NaninovelPostProcessFX {
 
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Red Channel", GUILayout.Width(190));
-                colorGrading.mixerRedOutRedIn.value = EditorGUILayout.FloatField(" ", colorGrading.mixerRedOutRedIn.value, GUILayout.Width(70));
-                colorGrading.mixerRedOutGreenIn.value = EditorGUILayout.FloatField(" ", colorGrading.mixerRedOutGreenIn.value, GUILayout.Width(70));
-                colorGrading.mixerRedOutBlueIn.value = EditorGUILayout.FloatField(" ", colorGrading.mixerRedOutBlueIn.value, GUILayout.Width(70));
+                colorGrading.mixerRedOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutRedIn.value, GUILayout.Width(70));
+                colorGrading.mixerRedOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutGreenIn.value, GUILayout.Width(70));
+                colorGrading.mixerRedOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutBlueIn.value, GUILayout.Width(70));
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Green Channel", GUILayout.Width(190));
-                colorGrading.mixerGreenOutRedIn.value = EditorGUILayout.FloatField("", colorGrading.mixerGreenOutRedIn.value, GUILayout.Width(70));
-                colorGrading.mixerGreenOutGreenIn.value = EditorGUILayout.FloatField("", colorGrading.mixerGreenOutGreenIn.value, GUILayout.Width(70));
-                colorGrading.mixerGreenOutBlueIn.value = EditorGUILayout.FloatField("", colorGrading.mixerGreenOutBlueIn.value, GUILayout.Width(70));
+                colorGrading.mixerGreenOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutRedIn.value, GUILayout.Width(70));
+                colorGrading.mixerGreenOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutGreenIn.value, GUILayout.Width(70));
+                colorGrading.mixerGreenOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutBlueIn.value, GUILayout.Width(70));
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField("Blue Channel", GUILayout.Width(190));
-                colorGrading.mixerBlueOutRedIn.value = EditorGUILayout.FloatField("", colorGrading.mixerBlueOutRedIn.value, GUILayout.Width(70));
-                colorGrading.mixerBlueOutGreenIn.value = EditorGUILayout.FloatField("", colorGrading.mixerBlueOutGreenIn.value, GUILayout.Width(70));
-                colorGrading.mixerBlueOutBlueIn.value = EditorGUILayout.FloatField("", colorGrading.mixerBlueOutBlueIn.value, GUILayout.Width(70));
+                colorGrading.mixerBlueOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutRedIn.value, GUILayout.Width(70));
+                colorGrading.mixerBlueOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutGreenIn.value, GUILayout.Width(70));
+                colorGrading.mixerBlueOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutBlueIn.value, GUILayout.Width(70));
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
@@ -416,7 +487,6 @@ namespace NaninovelPostProcessFX {
                 EditorGUILayout.LabelField("Gain", GUILayout.Width(190));
                 colorGrading.gain.value = EditorGUILayout.Vector4Field("", colorGrading.gain.value, GUILayout.Width(220));
                 GUILayout.EndHorizontal();
-
             }
             else
             {
@@ -429,14 +499,18 @@ namespace NaninovelPostProcessFX {
                 GUILayout.EndHorizontal();
             }
 
-            return Duration + "," + volume.weight + "," + colorGrading.gradingMode.value + "," + colorGrading.temperature.value + "," + colorGrading.tint.value + "," + colorGrading.postExposure.value + "," +
-                "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
-                colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
-                colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
-                colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
-                colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
-                colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
-                colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+            if (colorGrading.gradingMode.value.ToString() != "External") return Duration + "," + volume.weight + "," + colorGrading.gradingMode.value + "," +
+                 (colorGrading.gradingMode.value.ToString() == "LowDefinitionRange" ? colorGrading.ldrLut.value?.name + "," + colorGrading.ldrLutContribution.value.ToString() + "," : String.Empty) +
+                 colorGrading.temperature.value + "," + colorGrading.tint.value + "," + colorGrading.postExposure.value + "," +
+                 "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
+                 colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
+                 colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
+                 colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
+                 colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
+                 colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
+                 colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+
+            else return Duration + "," + volume.weight + "," + colorGrading.gradingMode.value + "," + colorGrading.ldrLut.value?.name;
         }
 
 #endif
@@ -451,14 +525,13 @@ namespace NaninovelPostProcessFX {
         private ColorGrading targetObject;
         private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (ColorGrading)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-                colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
-            logResult = targetObject.logResult;
+            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
         }
 
         public override void OnInspectorGUI()
@@ -469,7 +542,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (colorGrading != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -477,7 +550,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (colorGrading != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -485,22 +558,30 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (colorGrading != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) targetObject.logResult = true;
-            else targetObject.logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
-        private string CreateString() => "(time)," + "," + volume.weight + "," + colorGrading.gradingMode.value + "," + colorGrading.temperature.value + "," + colorGrading.tint.value + "," + colorGrading.postExposure.value + "," +
-                "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
-                colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
-                colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
-                colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
-                colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
-                colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
-                colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+        private string CreateString()
+        {
+
+            if(colorGrading.gradingMode.value.ToString() != "External") return "(time)," + "," + volume.weight + "," + colorGrading.gradingMode.value + "," +
+                 (colorGrading.gradingMode.value.ToString() == "LowDefinitionRange" ? colorGrading.ldrLut.value?.name + "," + colorGrading.ldrLutContribution.value.ToString() + "," : String.Empty) +
+                 colorGrading.temperature.value + "," + colorGrading.tint.value + "," + colorGrading.postExposure.value + "," +
+                 "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
+                 colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
+                 colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
+                 colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
+                 colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
+                 colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
+                 colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+
+            else return "(time)," + volume.weight + "," + colorGrading.gradingMode.value + "," + colorGrading.ldrLut.value?.ToString();
+        }
     }
 #endif
 

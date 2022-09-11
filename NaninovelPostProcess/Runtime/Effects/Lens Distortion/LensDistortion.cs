@@ -13,7 +13,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class LensDistortion : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -29,8 +29,6 @@ namespace NaninovelPostProcessFX {
 
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
-
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> xMultiplierTweener = new Tweener<FloatTween>();
@@ -39,9 +37,11 @@ namespace NaninovelPostProcessFX {
         private readonly Tweener<FloatTween> centerYTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> scaleTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
-        [SerializeField] private float defaultFocusDistance = 0.1f;
+        [Header("Lens Distortion Settings")]
         [SerializeField] private float defaultIntensity = 0f;
         [SerializeField] private float defaultXMultiplier = 1f;
         [SerializeField] private float defaultYMultiplier = 1f;
@@ -49,6 +49,7 @@ namespace NaninovelPostProcessFX {
         [SerializeField] private float defaultCenterY = 0f;
         [SerializeField] private float defaultScale = 1f;
 
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
@@ -59,13 +60,12 @@ namespace NaninovelPostProcessFX {
             Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
 
             VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            Intensity = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultFocusDistance;
-            XMultiplier = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultIntensity;
+            Intensity = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultIntensity;
+            XMultiplier = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultYMultiplier;
             YMultiplier = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultXMultiplier;
-            YMultiplier = parameters?.ElementAtOrDefault(5)?.AsInvariantFloat() ?? defaultYMultiplier;
             CenterX = parameters?.ElementAtOrDefault(5)?.AsInvariantFloat() ?? defaultCenterX;
-            CenterY = parameters?.ElementAtOrDefault(5)?.AsInvariantFloat() ?? defaultCenterY;
-            Scale = parameters?.ElementAtOrDefault(5)?.AsInvariantFloat() ?? defaultScale;
+            CenterY = parameters?.ElementAtOrDefault(6)?.AsInvariantFloat() ?? defaultCenterY;
+            Scale = parameters?.ElementAtOrDefault(7)?.AsInvariantFloat() ?? defaultScale;
         }
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
@@ -227,14 +227,14 @@ namespace NaninovelPostProcessFX {
         private LensDistortion targetObject;
         private UnityEngine.Rendering.PostProcessing.LensDistortion lensDistortion;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (LensDistortion)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             lensDistortion = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.LensDistortion>();
-            logResult = targetObject.logResult;
+
         }
 
         public override void OnInspectorGUI()
@@ -245,7 +245,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (lensDistortion != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -253,7 +253,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (lensDistortion != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -261,12 +261,12 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (lensDistortion != null) GUIUtility.systemCopyBuffer = CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString() => "(time)," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," +

@@ -4,25 +4,25 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 #endif
 
-namespace NaninovelPostProcessFX
+namespace NaninovelPostProcess
 {
     [EditInProjectSettings]
     public class PostProcessingConfiguration : Configuration
     {
 
 #if UNITY_POST_PROCESSING_STACK_V2
-        [Tooltip("Will override the Layer of the camera controlled by Naninovel and objects that have the Post Processing Object Manager component added.")]
-        public bool OverrideObjectsAndCameraLayer = true;
+        [Tooltip("Will override the Layer of the objects that have the Post Processing Object Manager component added.")]
+        public bool OverrideObjectsLayer = true;
 
         [Tooltip("The layer used for Post-process rendering. It is recommended to create a dedicated layer for this.")]
-        public int Layer = 5;
+        public int PostProcessingLayer = 5;
 
         [Header("Post Process Layer")]
 
         [Tooltip("Will add a Post Process Layer component to the camera controlled by Naninovel. If using a custom camera prefab with Post process Layer already added, the settings below will be applied.")]
         public bool AddPostProcessLayerToCamera = true;
 
-        [Tooltip("The layer to which the Post processing layer should be applied. Should be the same layer used by the post processing objects and camera (Enable \"Override Objects and Camera Layer\") to override all at once.")]
+        [Tooltip("The layer to which the Post processing layer should be applied. Should be the same layer used by the post processing objects (Enable \"Override Objects and Camera Layer\") to override the objects at once.")]
         public LayerMask LayerMask = 0;
 
         [Tooltip("This is needed for the Post Process Layer. You can find the default one by searching \"Post Process Resources\" and using the \"All\" filter.")]
@@ -43,7 +43,7 @@ namespace NaninovelPostProcessFX
         public float Sharpness = 0.25f;
 
 #else
-        [Header("Test")]
+        [Header("Post Process V2 has not been installed.")]
         private const string message = "Post Process V2 has not been installed.";
 #endif
     }

@@ -14,7 +14,7 @@ using UnityEditor;
 using System;
 #endif
 
-namespace NaninovelPostProcessFX { 
+namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
     public class DepthOfField : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
@@ -28,20 +28,26 @@ namespace NaninovelPostProcessFX {
 
         protected float FadeOutDuration { get; private set; }
 
-        public bool logResult { get; set; }
+
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> focusDistanceTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> apertureTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> focalLengthTweener = new Tweener<FloatTween>();
 
+        [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
+
+        [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
+
+        [Header("Depth of Field Settings")]
         [SerializeField] private float defaultFocusDistance = 0.1f;
         [SerializeField] private float defaultAperture = 1f;
         [SerializeField] private float defaultFocalLength = 1f;
         [SerializeField] private string defaultMaxBlurSize = "Medium";
 
+        [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
@@ -154,6 +160,7 @@ namespace NaninovelPostProcessFX {
             volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
+
             GUILayout.BeginHorizontal();
             dof.focusDistance.value = EditorGUILayout.FloatField("Focus Distance", dof.focusDistance.value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
@@ -170,7 +177,7 @@ namespace NaninovelPostProcessFX {
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Max Blur Size", GUILayout.Width(190));
-            string[] kernelSizeArray = new string[] { "Low", "Medium", "Large", "Very Large" };
+            string[] kernelSizeArray = new string[] { "Small", "Medium", "Large", "VeryLarge" };
             var sizeIndex = Array.IndexOf(kernelSizeArray, dof.kernelSize.value.ToString());
             sizeIndex = EditorGUILayout.Popup(sizeIndex, kernelSizeArray, GUILayout.Height(20), GUILayout.Width(220));
             dof.kernelSize.value = (KernelSize)sizeIndex;
@@ -191,14 +198,14 @@ namespace NaninovelPostProcessFX {
         private DepthOfField targetObject;
         private UnityEngine.Rendering.PostProcessing.DepthOfField dof;
         private PostProcessVolume volume;
-        public bool logResult;
+        public bool LogResult;
 
         private void Awake()
         {
             targetObject = (DepthOfField)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
             dof = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.DepthOfField>();
-            logResult = targetObject.logResult;
+
         }
 
         public override void OnInspectorGUI()
@@ -209,7 +216,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
                 if (dof != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -217,7 +224,7 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
                 if (dof != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
@@ -225,12 +232,12 @@ namespace NaninovelPostProcessFX {
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
                 if (dof != null) CreateString();
-                if (logResult) Debug.Log(GUIUtility.systemCopyBuffer);
+                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Toggle(logResult, "Log Results")) logResult = true;
-            else logResult = false;
+            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
+            else LogResult = false;
         }
 
         private string CreateString() => "(time)," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;

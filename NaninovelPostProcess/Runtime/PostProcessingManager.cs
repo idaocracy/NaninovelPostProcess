@@ -1,13 +1,9 @@
 ﻿#if UNITY_POST_PROCESSING_STACK_V2
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 using Naninovel;
 using UnityEngine.Rendering.PostProcessing;
 
 
-namespace NaninovelPostProcessFX
+namespace NaninovelPostProcess
 {
     [InitializeAtRuntime]
     public class PostProcessingManager : IEngineService
@@ -31,11 +27,6 @@ namespace NaninovelPostProcessFX
                 layer.volumeTrigger = cameraManager.Camera.transform;
                 layer.volumeLayer = Configuration.LayerMask;
                 layer.antialiasingMode = (PostProcessLayer.Antialiasing)Configuration.AntiAliasing;
-            }
-
-            if (Configuration.OverrideObjectsAndCameraLayer)
-            {
-                cameraManager.Camera.gameObject.layer = Configuration.Layer;
             }
 
             return UniTask.CompletedTask;

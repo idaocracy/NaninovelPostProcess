@@ -1,0 +1,20 @@
+{
+    "name": "Idaocracy.NaninovelPostProcess.Editor",
+    "references": [
+        "GUID:08ab4e9b32bfd234da6fed8acbd71909",
+        "GUID:299f0e1d2253c7f42906a1f24d2d2eb0",
+        "GUID:d60799ab2a985554ea1a39cd38695018",
+        "GUID:f1c0b9b11fb5f754db5c99cf4233e865"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

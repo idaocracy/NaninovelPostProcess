@@ -65,12 +65,11 @@ MonoBehaviour:
   defaultDuration: 0.35
   defaultVolumeWeight: 1
   defaultSpectralLutId: 
+  spectralLuts:
+  - {fileID: 2800000, guid: ff6ddbaa51f25994ca8b3888f2f62add, type: 3}
   defaultIntensity: 1
   defaultFastMode: 0
   defaultFadeOutDuration: 0
-  spectralLuts:
-  - {fileID: 2800000, guid: ff6ddbaa51f25994ca8b3888f2f62add, type: 3}
-  - {fileID: 2800000, guid: ff6ddbaa51f25994ca8b3888f2f62add, type: 3}
   spectralLutsId: []
 --- !u!114 &-1691442900951149423
 MonoBehaviour:
