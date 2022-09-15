@@ -2,16 +2,15 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
 #if UNITY_EDITOR
 using UnityEditor;
-using System;
 #endif
 
 namespace NaninovelPostProcess { 
@@ -25,10 +24,7 @@ namespace NaninovelPostProcess {
         protected float Aperture { get; private set; }
         protected float FocalLength { get; private set; }
         protected string MaxBlurSize { get; private set; }
-
         protected float FadeOutDuration { get; private set; }
-
-
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> focusDistanceTweener = new Tweener<FloatTween>();
@@ -62,17 +58,11 @@ namespace NaninovelPostProcess {
             Aperture = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultAperture;
             FocalLength = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultFocalLength;
             MaxBlurSize = parameters?.ElementAtOrDefault(5)?.ToString() ?? defaultMaxBlurSize;
-
         }
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (focusDistanceTweener.Running) focusDistanceTweener.CompleteInstantly();
-            if (apertureTweener.Running) apertureTweener.CompleteInstantly();
-            if (focalLengthTweener.Running) focalLengthTweener.CompleteInstantly();
-
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeDoFAsync(duration, VolumeWeight, FocusDistance, FocalLength, Aperture, MaxBlurSize, asyncToken);
         }
@@ -96,18 +86,17 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            if (focusDistanceTweener.Running) focusDistanceTweener.CompleteInstantly();
-            if (apertureTweener.Running) apertureTweener.CompleteInstantly();
-            if (focalLengthTweener.Running) focalLengthTweener.CompleteInstantly();
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
         }
 
-        private void OnDestroy()
+        private void CompleteTweens()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.DepthOfField>();
+            if (focusDistanceTweener.Running) focusDistanceTweener.CompleteInstantly();
+            if (apertureTweener.Running) apertureTweener.CompleteInstantly();
+            if (focalLengthTweener.Running) focalLengthTweener.CompleteInstantly();
+            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
 
         private void Awake()
@@ -117,7 +106,6 @@ namespace NaninovelPostProcess {
             dof.SetAllOverridesTo(true);
             volume.weight = 0f;
         }
-
 
         private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
@@ -183,7 +171,12 @@ namespace NaninovelPostProcess {
             dof.kernelSize.value = (KernelSize)sizeIndex;
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
+            return Duration + "," + GetString();
+        }
+
+        public string GetString()
+        {
+            return volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
         }
 
 #endif
@@ -215,7 +208,7 @@ namespace NaninovelPostProcess {
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (dof != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (dof != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -223,7 +216,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (dof != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (dof != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -231,7 +224,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (dof != null) CreateString();
+                if (dof != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -240,7 +233,6 @@ namespace NaninovelPostProcess {
             else LogResult = false;
         }
 
-        private string CreateString() => "(time)," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
     }
 
 #endif

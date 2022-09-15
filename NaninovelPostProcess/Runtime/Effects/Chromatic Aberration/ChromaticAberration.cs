@@ -1,16 +1,16 @@
 ﻿//2022 idaocracy
+
 #if UNITY_POST_PROCESSING_STACK_V2
 
-using System.Collections.Generic;
+using System;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
 #if UNITY_EDITOR
 using UnityEditor;
-using System;
 #endif
 
 namespace NaninovelPostProcess { 
@@ -44,7 +44,7 @@ namespace NaninovelPostProcess {
         private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.ChromaticAberration chromaticAberration;
 
-        [SerializeField] private List<string> spectralLutsId = new List<string>();
+        private List<string> spectralLutsId = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
@@ -57,9 +57,7 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeChromaticAberration(duration, VolumeWeight, SpectralLut, Intensity, FastMode, asyncToken);
         }
@@ -68,7 +66,7 @@ namespace NaninovelPostProcess {
         {
             var tasks = new List<UniTask>();
             if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (chromaticAberration.spectralLut.value?.ToString() != spectralLut) ChangeTexture(spectralLut);
+            if (chromaticAberration.spectralLut.value != null && chromaticAberration.spectralLut.value.name != spectralLut) ChangeTexture(spectralLut);
             if (chromaticAberration.intensity.value != intensity) tasks.Add(ChangeIntensityAsync(intensity, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);
@@ -81,16 +79,15 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
         }
 
-        private void OnDestroy()
+        private void CompleteTweens()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.ChromaticAberration>();
+            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
+            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
 
         private void Awake()
@@ -167,7 +164,12 @@ namespace NaninovelPostProcess {
             chromaticAberration.fastMode.value = bool.Parse(options[fastIndex]);
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + chromaticAberration.spectralLut.value?.name + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
+            return Duration + "," + GetString();
+        }
+
+        public string GetString()
+        {
+            return volume.weight + "," + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
         }
 
 #endif
@@ -198,21 +200,21 @@ namespace NaninovelPostProcess {
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]"; 
+                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]"; 
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = CreateString();
+                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -220,8 +222,6 @@ namespace NaninovelPostProcess {
             if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
             else LogResult = false;
         }
-
-        private string CreateString() => "(time)," + volume.weight + "," + chromaticAberration.spectralLut.value?.name + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
     }
 
 #endif

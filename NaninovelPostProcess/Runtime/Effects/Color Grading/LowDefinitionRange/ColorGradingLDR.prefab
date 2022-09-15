@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4147369095396762139}
   - component: {fileID: 4717744854929994854}
   m_Layer: 8
-  m_Name: ColorGrading
+  m_Name: ColorGradingLDR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

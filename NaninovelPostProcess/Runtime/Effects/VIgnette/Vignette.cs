@@ -2,16 +2,15 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
 #if UNITY_EDITOR
 using UnityEditor;
-using System;
 #endif
 
 namespace NaninovelPostProcess { 
@@ -95,15 +94,7 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (colorTweener.Running) colorTweener.CompleteInstantly();
-            if (centerTweener.Running) centerTweener.CompleteInstantly();
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (smoothnessTweener.Running) smoothnessTweener.CompleteInstantly();
-            if (roundnessTweener.Running) roundnessTweener.CompleteInstantly();
-            if (opacityTweener.Running) opacityTweener.CompleteInstantly();
-
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             if (Mode == "Classic") await ChangeVignetteClassicAsync(duration, VolumeWeight, Mode, Color, Center, Intensity, Smoothness, Roundness, Rounded, asyncToken);
             else if (Mode == "Masked") await ChangeVignetteMaskedAsync(duration, VolumeWeight, Mode, Color, Mask, Opacity);
@@ -130,7 +121,7 @@ namespace NaninovelPostProcess {
             if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             vignette.mode.value = (VignetteMode)System.Enum.Parse(typeof(VignetteMode), mode);
             if (vignette.color.value != color) tasks.Add(ChangeColorAsync(color, duration, asyncToken));
-            if (vignette.mask.value?.name != mask) ChangeTexture(mask);
+            if (vignette.mask.value != null && vignette.mask.value.name != mask) ChangeTexture(mask);
             if (vignette.opacity.value != opacity) tasks.Add(ChangeOpacityAsync(opacity, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);
@@ -143,23 +134,20 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
+            CompleteTweens();
+            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
+            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
+        }
+
+        private void CompleteTweens()
+        {
             if (colorTweener.Running) colorTweener.CompleteInstantly();
             if (centerTweener.Running) centerTweener.CompleteInstantly();
             if (intensityTweener.Running) intensityTweener.CompleteInstantly();
             if (smoothnessTweener.Running) smoothnessTweener.CompleteInstantly();
             if (roundnessTweener.Running) roundnessTweener.CompleteInstantly();
             if (opacityTweener.Running) opacityTweener.CompleteInstantly();
-
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void OnDestroy()
-        {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.Vignette>();
         }
 
         private void Awake()
@@ -288,7 +276,6 @@ namespace NaninovelPostProcess {
                 vignette.rounded.value = bool.Parse(options[roundedIndex]);
                 GUILayout.EndHorizontal();
 
-                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," + vignette.smoothness.value + "," + vignette.rounded.value.ToString().ToLower();
             }
             else
             {
@@ -304,11 +291,25 @@ namespace NaninovelPostProcess {
                 EditorGUILayout.LabelField("Opacity", GUILayout.Width(190));
                 vignette.opacity.value = EditorGUILayout.Slider(vignette.opacity.value, 0f, 1f, GUILayout.Width(220));
                 GUILayout.EndHorizontal();
-
-                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.mask.value?.name + "," + vignette.opacity.value;
-
             }
 
+            return Duration + "," + GetString();
+
+        }
+
+        public string GetString()
+        {
+
+            if (vignette.mode.value.ToString() == "Classic")
+            {
+                return volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
+                            vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
+            }
+            else
+            {
+                return volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
+            }
+            
         }
 #endif
     }
@@ -339,7 +340,7 @@ namespace NaninovelPostProcess {
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (vignette != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (vignette != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -347,7 +348,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (vignette != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (vignette != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -355,7 +356,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (vignette != null) GUIUtility.systemCopyBuffer = CreateString();
+                if (vignette != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -364,18 +365,6 @@ namespace NaninovelPostProcess {
             else LogResult = false;
         }
 
-        private string CreateString()
-        {
-            if (vignette.mode.value.ToString() == "Classic")
-            {
-                return "(time)," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
-                          vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
-            }
-            else
-            {
-                return "(time)," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.mask.value.name + "," + vignette.opacity.value;
-            }
-        }
     }
 
 #endif

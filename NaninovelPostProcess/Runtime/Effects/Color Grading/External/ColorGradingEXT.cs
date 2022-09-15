@@ -2,6 +2,7 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,53 +16,54 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class MotionBlur : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class ColorGradingEXT : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
-        protected float Duration { get; private set; }
+        protected string LookUpTexture { get; private set; }
         protected float VolumeWeight { get; private set; }
-        protected float ShutterAngle { get; private set; }
-        protected float SampleCount { get; private set; }
+        protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
-        private readonly Tweener<FloatTween> shutterAngleTweener = new Tweener<FloatTween>();
-        private readonly Tweener<FloatTween> sampleCountTweener = new Tweener<FloatTween>();
 
         [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
         [Header("Volume Settings")]
         [SerializeField] private float defaultVolumeWeight = 1f;
-        [Header("Motion Blur Settings")]
-        [SerializeField] private float defaultShutterAngle = 270f;
-        [SerializeField] private float defaultSampleCount = 10f;
+        [Header("Color Grading Settings")]
+        [SerializeField] private string defaultLookUpTexture = "None";
+        [SerializeField] private List<Texture> lookUpTextures = new List<Texture>();
+
         [Header("Despawn/Fadeout Settings")]
         [SerializeField] private float defaultFadeOutDuration = 0.35f;
 
         private PostProcessVolume volume;
-        private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
+        private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
+
+        private List<string> lookUpTextureIds = new List<string>();
 
         public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
             Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
             VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            ShutterAngle = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultShutterAngle;
-            SampleCount = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultSampleCount;
+            LookUpTexture = parameters?.ElementAtOrDefault(2) ?? defaultLookUpTexture;
+            
         }
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
             CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
-            await ChangeDoFAsync(duration, VolumeWeight, ShutterAngle, SampleCount, asyncToken);
+            await ChangeColorGradingAsync(duration, VolumeWeight, LookUpTexture, asyncToken);
         }
 
-        public async UniTask ChangeDoFAsync(float duration, float volumeWeight, float focusDistance, float focalLength, AsyncToken asyncToken = default)
+        public async UniTask ChangeColorGradingAsync(float duration, float volumeWeight, string lookUpTexture, AsyncToken asyncToken = default)
         {
-            var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (motionBlur.shutterAngle.value != focusDistance) tasks.Add(ChangeShutterAngleAsync(focusDistance, duration, asyncToken));
-            if (motionBlur.sampleCount.value != focalLength) tasks.Add(ChangeSampleCountAsync(focalLength, duration, asyncToken));
 
+            var tasks = new List<UniTask>();
+
+            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (colorGrading.externalLut.value != null && colorGrading.externalLut.value.ToString() != lookUpTexture) ChangeTexture(lookUpTexture);
+            
             await UniTask.WhenAll(tasks);
         }
 
@@ -79,41 +81,49 @@ namespace NaninovelPostProcess {
 
         private void CompleteTweens()
         {
-            if (shutterAngleTweener.Running) shutterAngleTweener.CompleteInstantly();
-            if (sampleCountTweener.Running) sampleCountTweener.CompleteInstantly();
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
+            if(volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
 
         private void Awake()
         {
             volume = GetComponent<PostProcessVolume>();
-            motionBlur = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.MotionBlur>();
-            motionBlur.SetAllOverridesTo(true);
+            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
+            colorGrading.SetAllOverridesTo(true);
+            colorGrading.gradingMode.value = GradingMode.External;
             volume.weight = 0f;
+            lookUpTextureIds = lookUpTextures.Select(s => s.name).ToList();
+            lookUpTextureIds.Insert(0, "None");
         }
+
         private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
             else volume.weight = volumeWeight;
         }
-        private async UniTask ChangeShutterAngleAsync(float shutterAngle, float duration, AsyncToken asyncToken = default)
-        {
 
-            if (duration > 0) await shutterAngleTweener.RunAsync(new FloatTween(motionBlur.shutterAngle.value, shutterAngle, duration, x => motionBlur.shutterAngle.value = x), asyncToken, motionBlur);
-            else motionBlur.shutterAngle.value = shutterAngle;
-        }
-        private async UniTask ChangeSampleCountAsync(float sampleCount, float duration, AsyncToken asyncToken = default)
+        private void ChangeTexture(string imageId)
         {
-
-            if (duration > 0) await sampleCountTweener.RunAsync(new FloatTween((int)motionBlur.sampleCount.value, sampleCount, duration, x => motionBlur.sampleCount.value = (int)x), asyncToken, motionBlur);
-            else motionBlur.sampleCount.value = (int)sampleCount;
+            if (imageId == "None" || String.IsNullOrEmpty(imageId))
+            {
+                 colorGrading.externalLut.value = null;
+            }
+            else
+            {
+                foreach (var img in lookUpTextures)
+                {
+                    if (img != null && img.name == imageId)
+                    {
+                        if (colorGrading.externalLut.value.ToString() == "External") colorGrading.externalLut.value = img;
+                    }
+                }
+            }
         }
 
 #if UNITY_EDITOR
-
         public string SceneAssistantParameters()
         {
             EditorGUIUtility.labelWidth = 190;
+
             GUILayout.BeginHorizontal();
             Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
             GUILayout.EndHorizontal();
@@ -124,65 +134,64 @@ namespace NaninovelPostProcess {
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Shutter Angle", GUILayout.Width(190));
-            motionBlur.shutterAngle.value = EditorGUILayout.Slider(motionBlur.shutterAngle.value, 0f, 360f, GUILayout.Width(220));
+            EditorGUILayout.LabelField("Lookup Texture", GUILayout.Width(190));
+            string[] maskTexturesArray = lookUpTextureIds.ToArray();
+            var maskIndex = Array.IndexOf(maskTexturesArray, colorGrading.externalLut.value?.name ?? "None");
+            maskIndex = EditorGUILayout.Popup(maskIndex, maskTexturesArray, GUILayout.Height(20), GUILayout.Width(220));
+            colorGrading.externalLut.value = lookUpTextures.FirstOrDefault(s => s.name == lookUpTextureIds[maskIndex]) ?? null;
             GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Sample Count", GUILayout.Width(190));
-            motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
+            
 
             return Duration + "," + GetString();
         }
 
         public string GetString()
         {
-            return volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
+            return volume.weight + "," + (colorGrading.externalLut.value != null ? colorGrading.externalLut.value.name : string.Empty);
         }
 #endif
     }
 
+
 #if UNITY_EDITOR
 
-    [CustomEditor(typeof(MotionBlur))]
-    public class CopyFXMotionBlur : Editor
+    [CustomEditor(typeof(ColorGradingEXT))]
+    public class CopyFXColorGradingEXT : Editor
     {
-        private MotionBlur targetObject;
-        private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
+        private ColorGradingEXT targetObject;
+        private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
         private PostProcessVolume volume;
         public bool LogResult;
 
         private void Awake()
         {
-            targetObject = (MotionBlur)target;
+            targetObject = (ColorGradingEXT)target;
             volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            motionBlur = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>();
-
+            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
         }
 
         public override void OnInspectorGUI()
         {
-            base.DrawDefaultInspector();
+            DrawDefaultInspector();
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
+                if (colorGrading != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]"; 
+                if (colorGrading != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
+                if (colorGrading != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -191,7 +200,6 @@ namespace NaninovelPostProcess {
             else LogResult = false;
         }
     }
-
 #endif
 
 }

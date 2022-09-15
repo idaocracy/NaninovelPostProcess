@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 2614796084570639616}
   - component: {fileID: 7018614623841673359}
-  - component: {fileID: 624958787489417217}
-  - component: {fileID: 3548116257828062552}
+  - component: {fileID: 7159206544966731526}
+  - component: {fileID: 4717744854929994854}
   m_Layer: 8
-  m_Name: Bloom
+  m_Name: ColorGradingEXT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -50,7 +50,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &624958787489417217
+--- !u!114 &7159206544966731526
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -59,24 +59,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 2261174484603219885}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95b0e5f3647c24d41a2903c1475d8507, type: 3}
+  m_Script: {fileID: 11500000, guid: 5ac9b2004a92dc744aa0342d373dfc5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultIntensity: 10
-  defaultThreshold: 1
-  defaultSoftKnee: 0.5
-  defaultClamp: 65472
-  defaultDiffusion: 7
-  defaultAnamorphicRatio: 0
-  defaultColor: {r: 1, g: 1, b: 1, a: 1}
-  defaultFastMode: 0
-  defaultDirtTextureId: 
-  dirtTextures: []
-  defaultDirtIntensity: 0
+  defaultLookUpTexture: None
+  lookUpTextures: []
   defaultFadeOutDuration: 0.35
---- !u!114 &3548116257828062552
+--- !u!114 &4717744854929994854
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

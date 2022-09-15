@@ -47,6 +47,10 @@ namespace NaninovelPostProcess
                 DrawWhen(Configuration.AntiAliasing == 1, k);
             };
 
+            drawers[nameof(PostProcessingConfiguration.SMAAQuality)] = s => {
+                DrawWhen(Configuration.AntiAliasing == 2, s);
+            };
+
             drawers[nameof(PostProcessingConfiguration.SMAAQuality)] = q =>
             {
                 if (Configuration.AntiAliasing != 2) return;

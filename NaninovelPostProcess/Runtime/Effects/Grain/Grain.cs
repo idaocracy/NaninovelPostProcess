@@ -2,16 +2,15 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
 #if UNITY_EDITOR
 using UnityEditor;
-using System;
 #endif
 
 namespace NaninovelPostProcess 
@@ -65,12 +64,7 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (sizeTweener.Running) sizeTweener.CompleteInstantly();
-            if (luminanceContributionTweener.Running) luminanceContributionTweener.CompleteInstantly();
-
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeGrainAsync(duration, VolumeWeight, Colored, Intensity, Size, LuminanceContribution, asyncToken);
         }
@@ -93,18 +87,17 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (sizeTweener.Running) sizeTweener.CompleteInstantly();
-            if (luminanceContributionTweener.Running) luminanceContributionTweener.CompleteInstantly();
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
         }
 
-        private void OnDestroy()
+        private void CompleteTweens()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.Grain>();
+            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
+            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
+            if (sizeTweener.Running) sizeTweener.CompleteInstantly();
+            if (luminanceContributionTweener.Running) luminanceContributionTweener.CompleteInstantly();
         }
 
         private void Awake()
@@ -114,7 +107,6 @@ namespace NaninovelPostProcess
             grain.SetAllOverridesTo(true);
             volume.weight = 0f;
         }
-
 
         private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
@@ -177,9 +169,13 @@ namespace NaninovelPostProcess
             grain.lumContrib.value = EditorGUILayout.Slider(grain.lumContrib.value, 0f, 1f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
+            return Duration + "," + GetString();
         }
 
+        public string GetString()
+        {
+            return volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
+        }
 #endif
     }
 
@@ -208,7 +204,7 @@ namespace NaninovelPostProcess
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (grain != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (grain != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -216,7 +212,7 @@ namespace NaninovelPostProcess
 
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (grain != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (grain != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -224,7 +220,7 @@ namespace NaninovelPostProcess
 
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (grain != null) CreateString();
+                if (grain != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -232,8 +228,6 @@ namespace NaninovelPostProcess
             if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
             else LogResult = false;
         }
-
-        private string CreateString() => "(time)," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
     }
 
 #endif

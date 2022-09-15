@@ -92,8 +92,7 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeBloomAsync(duration, VolumeWeight, Intensity, Threshold,  SoftKnee, Clamp, Diffusion, AnamorphicRatio, BloomColor, FastMode, DirtTexture, DirtIntensity, asyncToken);
         }
@@ -109,7 +108,7 @@ namespace NaninovelPostProcess
             if (bloom.diffusion.value != diffusion) tasks.Add(ChangeDiffusionAsync(diffusion, duration, asyncToken));
             if (bloom.anamorphicRatio.value != anamorphicRatio) tasks.Add(ChangeAnamorphicRatioAsync(anamorphicRatio, duration, asyncToken));
             if (bloom.color.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
-            if (bloom.dirtTexture.value?.name != dirtTexture) ChangeTexture(dirtTexture);
+            if (bloom.dirtTexture.value != null && bloom.dirtTexture.value.name != dirtTexture) ChangeTexture(dirtTexture);
             if (bloom.dirtIntensity.value != dirtIntensity) tasks.Add(ChangeDirtIntensityAsync(dirtIntensity, duration, asyncToken));
             bloom.fastMode.value = FastMode;
 
@@ -123,16 +122,22 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-
         }
 
-        public void OnDestroy()
+        private void CompleteTweens()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.Bloom>();
+            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
+            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
+            if (thresholdTweener.Running) thresholdTweener.CompleteInstantly();
+            if (softKneeTweener.Running) softKneeTweener.CompleteInstantly();
+            if (clampTweener.Running) clampTweener.CompleteInstantly();
+            if (diffusionTweener.Running) diffusionTweener.CompleteInstantly();
+            if (anamorphicRatioTweener.Running) anamorphicRatioTweener.CompleteInstantly();
+            if (tintTweener.Running) tintTweener.CompleteInstantly();
+            if (dirtIntensityTweener.Running) dirtIntensityTweener.CompleteInstantly();
         }
 
         private void Awake()
@@ -275,11 +280,15 @@ namespace NaninovelPostProcess
             bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
-                  bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
+            return Duration + "," + GetString();
 
         }
 
+        public string GetString()
+        {
+            return volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," + bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + 
+                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + (bloom.dirtTexture.value != null ? bloom.dirtTexture.value.name : string.Empty) + "," + bloom.dirtIntensity.value;
+        }
 #endif
     }
 
@@ -308,21 +317,21 @@ namespace NaninovelPostProcess
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (bloom != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (bloom != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (bloom != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (bloom != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (bloom != null) GUIUtility.systemCopyBuffer = CreateString();
+                if (bloom != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -331,8 +340,6 @@ namespace NaninovelPostProcess
             else LogResult = false;
         }
 
-        private string CreateString() => "(time)," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," +
-                  bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + bloom.dirtTexture.value?.name + "," + bloom.dirtIntensity.value;
     }
 
 #endif

@@ -1,16 +1,15 @@
 ﻿//2022 idaocracy
+
 #if UNITY_POST_PROCESSING_STACK_V2
 
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
 #if UNITY_EDITOR
 using UnityEditor;
-using System;
 #endif
 
 namespace NaninovelPostProcess { 
@@ -212,7 +211,12 @@ namespace NaninovelPostProcess {
             lensDistortion.scale.value = EditorGUILayout.Slider(lensDistortion.scale.value, 0.01f, 5f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
+            return Duration + "," + GetString();
+        }
+
+        public string GetString()
+        {
+            return volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
         }
 
 #endif
@@ -244,7 +248,7 @@ namespace NaninovelPostProcess {
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)" + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -252,7 +256,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)" + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -260,7 +264,7 @@ namespace NaninovelPostProcess {
 
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = CreateString();
+                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -268,9 +272,6 @@ namespace NaninovelPostProcess {
             if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
             else LogResult = false;
         }
-
-        private string CreateString() => "(time)," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," +
-                  lensDistortion.centerY.value + "," + lensDistortion.scale.value;
     }
 
 #endif

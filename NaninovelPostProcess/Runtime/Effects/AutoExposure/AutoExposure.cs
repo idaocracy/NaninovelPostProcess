@@ -29,8 +29,6 @@ namespace NaninovelPostProcess
         protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
-
-
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<VectorTween> filteringTweener = new Tweener<VectorTween>();
         private readonly Tweener<FloatTween> minimumTweener = new Tweener<FloatTween>();
@@ -78,8 +76,7 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeAutoExposureAsync(duration, VolumeWeight, Filtering, Minimum,  Maximum, ExposureCompensation, Type, SpeedUp, SpeedDown, asyncToken);
         }
@@ -109,16 +106,20 @@ namespace NaninovelPostProcess
 
         public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
             await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-
         }
 
-        public void OnDestroy()
+        private void CompleteTweens()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.AutoExposure>();
+            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
+            if (filteringTweener.Running) filteringTweener.CompleteInstantly();
+            if (minimumTweener.Running) minimumTweener.CompleteInstantly();
+            if (maximumTweener.Running) maximumTweener.CompleteInstantly();
+            if (exposureCompensationTweener.Running) exposureCompensationTweener.CompleteInstantly();
+            if (speedUpTweener.Running) speedUpTweener.CompleteInstantly();
+            if (speedDownTweener.Running) speedDownTweener.CompleteInstantly();
         }
 
         private void Awake()
@@ -146,7 +147,6 @@ namespace NaninovelPostProcess
             if (duration > 0) await minimumTweener.RunAsync(new FloatTween(autoExposure.minLuminance.value, minimum, duration, x => autoExposure.minLuminance.value = x), asyncToken, autoExposure);
             else autoExposure.minLuminance.value = minimum;
         }
-
         private async UniTask ChangeMaximumAsync(float maximum, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await maximumTweener.RunAsync(new FloatTween(autoExposure.maxLuminance.value, maximum, duration, x => autoExposure.maxLuminance.value = x), asyncToken, autoExposure);
@@ -219,7 +219,12 @@ namespace NaninovelPostProcess
                 GUILayout.EndHorizontal();
             }
 
-            return Duration + "," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
+            return Duration + "," + GetString();
+        }
+
+        public string GetString()
+        {
+            return volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
                   autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
         }
 
@@ -252,21 +257,21 @@ namespace NaninovelPostProcess
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:" + CreateString();
+                if (autoExposure != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
             {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:" + CreateString() + "]";
+                if (autoExposure != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy params", GUILayout.Height(50)))
             {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = CreateString();
+                if (autoExposure != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
@@ -274,9 +279,6 @@ namespace NaninovelPostProcess
             if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
             else LogResult = false;
         }
-
-        private string CreateString() => "(time)," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
-                  autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
     }
 
     #endif
