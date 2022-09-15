@@ -56,6 +56,9 @@ Example:
 
 Some of the effects may not be designed for lower end platforms. Be sure to profile your game to see if they're a fit. In particular, consider using Naninovel's built in Depth of Field (https://naninovel.com/guide/special-effects.html#depth-of-field-bokeh) or Blur (https://naninovel.com/guide/special-effects.html#blur) over the PostProcessing equivalent as that one seems to have the biggest impact on overall performance (and doesn't look particularly good in orthographic/2D setups)
 
+# Third-party Post-processing effects
+If using third-party post-processing plugins, feel free use the **Post Processing Object Manager component** to include the object among the objects to be overridden if "Override Objects Later" is enabled.
+
 # Contact
 
 If you need help with the extension, you can contact me on here or on Discord. I am the tech support person (only yellow username) on the official Naninovel discord.
