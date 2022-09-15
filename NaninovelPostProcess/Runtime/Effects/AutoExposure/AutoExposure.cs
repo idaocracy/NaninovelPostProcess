@@ -252,8 +252,6 @@ namespace NaninovelPostProcess
 
         public override void OnInspectorGUI()
         {
-            base.DrawDefaultInspector();
-
             GUILayout.Space(20f);
             if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
             {
@@ -278,11 +276,12 @@ namespace NaninovelPostProcess
             GUILayout.Space(20f);
             if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
             else LogResult = false;
+
+            base.DrawDefaultInspector();
         }
     }
 
     #endif
-
 }
 
 #endif
