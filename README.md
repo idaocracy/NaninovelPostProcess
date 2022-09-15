@@ -30,8 +30,7 @@ Notice that the ColorGrading effect has been split into three different effects:
 
 NaninovelSceneAssistant: https://github.com/idaocracy/NaninovelSceneAssistant
 
-![image](https://user-images.githubusercontent.com/77254066/190376355-e157ed47-6fcd-418c-b5b8-5b9e04ade586.png)
-
+![image](https://user-images.githubusercontent.com/77254066/190382028-34050f97-74a7-4100-9add-182596739239.png)
 
 # Texture parameters
 
