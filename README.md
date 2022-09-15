@@ -10,7 +10,7 @@ Postprocessing commands for use within Naninovel. Developed with Naninovel 1.17 
 You can find information on the functions and parameters of each effect in the Effects section in the Post Processing documentation.
 https://docs.unity3d.com/Packages/com.unity.postprocessing@3.2/manual/index.html
 
-Notice that the ColorGrading effect has been split into three different effects: HDR, LDR and External. Check the documentation for info on which one suits you best.  
+Notice that the ColorGrading effect has been split into three different parts: HDR, LDR and External. Check the documentation for info on which one suits you best.  
 
 # Installation
 
