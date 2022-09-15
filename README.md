@@ -48,7 +48,7 @@ As with most built-in spawn effects, you can spawn multiple instances of the eff
 
 Example:
 ```
-@spawn Bloom#1 params:2,0 wait:false
+@despawn Bloom#1 params:2 wait:false
 @spawn Bloom#2 params:2,1 
 ```
 
