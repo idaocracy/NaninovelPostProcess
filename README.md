@@ -10,8 +10,6 @@ https://docs.unity3d.com/Packages/com.unity.postprocessing@3.2/manual/index.html
 
 Notice that the ColorGrading effect has been split into three different effects: HDR, LDR and External. Check the documentation for info on which one suits you best.  
 
-**Be aware, that this package won't work if you are using URP or HDRP.**
-
 # Installation
 
 #### 1. Install the Post Processing package via Unity's package manager
