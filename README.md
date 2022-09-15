@@ -1,5 +1,7 @@
 # NaninovelPostProcessFX
-Commands for postprocessing for use within Naninovel. Developed with Naninovel 1.17 & 1.18 and Post Processing 3.2.
+Postprocessing commands for use within Naninovel. Developed with Naninovel 1.17 & 1.18 and Post Processing 3.2.
+![naninovelpostprocessgif](https://user-images.githubusercontent.com/77254066/190400417-c9261f8f-93e7-4a5b-a745-6a93733d2ebb.gif)
+
 
 **Please note that the extension won't work in projects that use URP or HDRP.**
 
