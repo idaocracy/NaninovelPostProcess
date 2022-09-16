@@ -27,25 +27,30 @@ namespace NaninovelPostProcess
                 layer.volumeLayer = Configuration.LayerMask;
                 layer.antialiasingMode = (PostProcessLayer.Antialiasing)Configuration.AntiAliasing;
 
-                if(layer.antialiasingMode == PostProcessLayer.Antialiasing.FastApproximateAntialiasing)
-                {
-                    layer.fastApproximateAntialiasing.fastMode = Configuration.FastMode;
-                    layer.fastApproximateAntialiasing.keepAlpha = Configuration.KeepAlpha;
-                }
-                else if(layer.antialiasingMode == PostProcessLayer.Antialiasing.SubpixelMorphologicalAntialiasing)
-                {
-                    layer.subpixelMorphologicalAntialiasing.quality = (SubpixelMorphologicalAntialiasing.Quality)Configuration.SMAAQuality;
-                }
-                else if(layer.antialiasingMode == PostProcessLayer.Antialiasing.TemporalAntialiasing)
-                {
-                    layer.temporalAntialiasing.jitterSpread = Configuration.JitterSpread;
-                    layer.temporalAntialiasing.stationaryBlending = Configuration.StationaryBlending;
-                    layer.temporalAntialiasing.motionBlending = Configuration.MotionBlending;
-                    layer.temporalAntialiasing.sharpness = Configuration.Sharpness;
-                }
+                SetAntiAlias(layer);
             }
 
             return UniTask.CompletedTask;
+        }
+
+        private void SetAntiAlias(PostProcessLayer layer)
+        {
+            if (layer.antialiasingMode == PostProcessLayer.Antialiasing.FastApproximateAntialiasing)
+            {
+                layer.fastApproximateAntialiasing.fastMode = Configuration.FastMode;
+                layer.fastApproximateAntialiasing.keepAlpha = Configuration.KeepAlpha;
+            }
+            else if (layer.antialiasingMode == PostProcessLayer.Antialiasing.SubpixelMorphologicalAntialiasing)
+            {
+                layer.subpixelMorphologicalAntialiasing.quality = (SubpixelMorphologicalAntialiasing.Quality)Configuration.SMAAQuality;
+            }
+            else if (layer.antialiasingMode == PostProcessLayer.Antialiasing.TemporalAntialiasing)
+            {
+                layer.temporalAntialiasing.jitterSpread = Configuration.JitterSpread;
+                layer.temporalAntialiasing.stationaryBlending = Configuration.StationaryBlending;
+                layer.temporalAntialiasing.motionBlending = Configuration.MotionBlending;
+                layer.temporalAntialiasing.sharpness = Configuration.Sharpness;
+            }
         }
 
         public void ResetService()
