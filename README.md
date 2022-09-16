@@ -15,6 +15,7 @@ Notice that the ColorGrading effect has been split into three different parts: H
 # Installation
 
 Check this video for a quick guide on installation and usage:
+
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/iAot5FwPO8w/0.jpg)](https://www.youtube.com/watch?v=iAot5FwPO8w)  
 
 #### 1. Install the Post Processing package via Unity's package manager
