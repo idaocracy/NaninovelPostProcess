@@ -8,7 +8,6 @@ namespace NaninovelPostProcess
     [InitializeAtRuntime]
     public class PostProcessingManager : IEngineService
     {
-
         public virtual PostProcessingConfiguration Configuration { get; }
         private readonly ICameraManager cameraManager;
 
@@ -27,6 +26,23 @@ namespace NaninovelPostProcess
                 layer.volumeTrigger = cameraManager.Camera.transform;
                 layer.volumeLayer = Configuration.LayerMask;
                 layer.antialiasingMode = (PostProcessLayer.Antialiasing)Configuration.AntiAliasing;
+
+                if(layer.antialiasingMode == PostProcessLayer.Antialiasing.FastApproximateAntialiasing)
+                {
+                    layer.fastApproximateAntialiasing.fastMode = Configuration.FastMode;
+                    layer.fastApproximateAntialiasing.keepAlpha = Configuration.KeepAlpha;
+                }
+                else if(layer.antialiasingMode == PostProcessLayer.Antialiasing.SubpixelMorphologicalAntialiasing)
+                {
+                    layer.subpixelMorphologicalAntialiasing.quality = (SubpixelMorphologicalAntialiasing.Quality)Configuration.SMAAQuality;
+                }
+                else if(layer.antialiasingMode == PostProcessLayer.Antialiasing.TemporalAntialiasing)
+                {
+                    layer.temporalAntialiasing.jitterSpread = Configuration.JitterSpread;
+                    layer.temporalAntialiasing.stationaryBlending = Configuration.StationaryBlending;
+                    layer.temporalAntialiasing.motionBlending = Configuration.MotionBlending;
+                    layer.temporalAntialiasing.sharpness = Configuration.Sharpness;
+                }
             }
 
             return UniTask.CompletedTask;
