@@ -21,7 +21,7 @@ Check this video for a quick guide on installation and usage:
 #### 1. Install the Post Processing package via Unity's package manager
 ![image](https://user-images.githubusercontent.com/77254066/189064761-83970d6f-3c8e-4077-b064-27bfebec6aa2.png)
 
-#### 2. Download the package via Git URL
+#### 2. Import the NaninovelPostProcess folder in the github repository into the project.
 
 #### 3. Add Idaocracy.NaninovelPostProcess.Runtime and Idaocracy.NaninovelPostProcess.Editor under Type assemblies in the Engine configuration.
 ![image](https://user-images.githubusercontent.com/77254066/189537566-d564e248-4073-4917-b71a-4dcae11e4afd.png)
