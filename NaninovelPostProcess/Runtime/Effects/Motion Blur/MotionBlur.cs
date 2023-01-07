@@ -132,13 +132,14 @@ namespace NaninovelPostProcess {
             EditorGUILayout.LabelField("Sample Count", GUILayout.Width(190));
             motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
             GUILayout.EndHorizontal();
-
+            Debug.Log("Test");
             return Duration + "," + GetString();
         }
 
         public string GetString()
         {
             return volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
+
         }
 #endif
     }
