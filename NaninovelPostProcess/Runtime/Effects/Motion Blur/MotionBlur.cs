@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using Codice.Client.BaseCommands.Acl;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -132,14 +133,12 @@ namespace NaninovelPostProcess {
             EditorGUILayout.LabelField("Sample Count", GUILayout.Width(190));
             motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
             GUILayout.EndHorizontal();
-            Debug.Log("Test");
-            return Duration + "," + GetString();
+            return GetCommandString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
-
+            return "time:" + Duration + " weight:" + volume.weight + " shutterAngle:" + motionBlur.shutterAngle.value + " sampleCount:" + motionBlur.sampleCount.value;
         }
 #endif
     }
@@ -166,23 +165,23 @@ namespace NaninovelPostProcess {
         {
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy motionBlur (@)", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
+                if (motionBlur != null) GUIUtility.systemCopyBuffer = "@motionBlur " + targetObject.GetCommandString();
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy motionBlur ([])", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]"; 
+                if (motionBlur != null) GUIUtility.systemCopyBuffer = "[motionBlur " + targetObject.GetCommandString() + "]"; 
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
             GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
+            if (GUILayout.Button("Copy spawn params", GUILayout.Height(50)))
             {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
+                if (motionBlur != null) GUIUtility.systemCopyBuffer = "params:(time)," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
                 if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
             }
 
