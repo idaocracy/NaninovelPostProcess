@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class DepthOfField : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class DepthOfField : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -171,12 +171,17 @@ namespace NaninovelPostProcess {
             dof.kernelSize.value = (KernelSize)sizeIndex;
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
+            return "time:" + Duration + " weight:" + volume.weight + " focusDistance:" + dof.focusDistance.value + " aperture:" + dof.aperture.value + " focalLength:" + dof.focalLength.value + " kernelSize:" + dof.kernelSize.value;
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
         }
 
 #endif
@@ -186,54 +191,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(DepthOfField))]
-    public class CopyFXDoF : Editor
+    public class CopyFXDoF : PostProcessEditor
     {
-        private DepthOfField targetObject;
-        private UnityEngine.Rendering.PostProcessing.DepthOfField dof;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (DepthOfField)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            dof = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.DepthOfField>();
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (dof != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (dof != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (dof != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-
-        }
-
+        protected override string label => "doF";
     }
 
 #endif

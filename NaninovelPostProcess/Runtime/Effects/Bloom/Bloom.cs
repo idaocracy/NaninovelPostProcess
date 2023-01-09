@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Bloom : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class Bloom : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Intensity { get; private set; }
         protected float Threshold { get; private set; }
@@ -280,14 +280,20 @@ namespace NaninovelPostProcess
             bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
 
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," + bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," + 
-                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + "," + (bloom.dirtTexture.value != null ? bloom.dirtTexture.value.name : string.Empty) + "," + bloom.dirtIntensity.value;
+            return "time:" + Duration + " weight:" + volume.weight + " intensity:" + bloom.intensity.value + " threshold:" + bloom.threshold.value + " softKnee:" + bloom.softKnee.value + " clamp:" + bloom.clamp.value + " diffusion:" + bloom.diffusion.value + " anamorphicRatio:" + bloom.anamorphicRatio.value + " color:" +
+                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + " fastMode:" + bloom.fastMode.value.ToString().ToLower() + (bloom.dirtTexture.value != null ? " dirtTexture:" + bloom.dirtTexture.value.name + " dirtIntensity:" + bloom.dirtIntensity.value : string.Empty);
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," + bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," +
+                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + (bloom.dirtTexture.value != null ? "," + bloom.dirtTexture.value.name + "," + bloom.dirtIntensity.value : string.Empty);
         }
 #endif
     }
@@ -296,50 +302,9 @@ namespace NaninovelPostProcess
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Bloom))]
-    public class CopyFXBloom : Editor
+    public class CopyFXBloom : PostProcessEditor
     {
-        private Bloom targetObject;
-        private UnityEngine.Rendering.PostProcessing.Bloom bloom;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (Bloom)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            bloom = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Bloom>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (bloom != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (bloom != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (bloom != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
-
+        protected override string label => "bloom";
     }
 
 #endif

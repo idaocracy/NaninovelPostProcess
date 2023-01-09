@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Vignette : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class Vignette : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -293,23 +293,38 @@ namespace NaninovelPostProcess {
                 GUILayout.EndHorizontal();
             }
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
 
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
 
             if (vignette.mode.value.ToString() == "Classic")
             {
-                return volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
+                return "time:" + Duration + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
                             vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
             }
             else
             {
-                return volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
+                return "time:" + Duration + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
             }
             
+        }
+
+        public string GetSpawnString()
+        {
+
+            if (vignette.mode.value.ToString() == "Classic")
+            {
+                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
+                            vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
+            }
+            else
+            {
+                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
+            }
+
         }
 #endif
     }
@@ -318,54 +333,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Vignette))]
-    public class CopyFXVignette : Editor
+    public class CopyFXVignette : PostProcessEditor
     {
-        private Vignette targetObject;
-        private UnityEngine.Rendering.PostProcessing.Vignette vignette;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (Vignette)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            vignette = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Vignette>();
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (vignette != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (vignette != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (vignette != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
-
+        protected override string label => "vignette";
     }
 
 #endif

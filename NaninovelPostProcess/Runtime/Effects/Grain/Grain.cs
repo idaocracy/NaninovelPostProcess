@@ -17,7 +17,7 @@ namespace NaninovelPostProcess
 { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Grain : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class Grain : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -169,12 +169,17 @@ namespace NaninovelPostProcess
             grain.lumContrib.value = EditorGUILayout.Slider(grain.lumContrib.value, 0f, 1f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
+            return "time:" + Duration + " weight:" + volume.weight + " colored:" + grain.colored.value.ToString().ToLower() + " intensity:" + grain.intensity.value + " size:" + grain.size.value + " luminanceContribution:" + grain.lumContrib.value;
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
         }
 #endif
     }
@@ -183,52 +188,9 @@ namespace NaninovelPostProcess
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Grain))]
-    public class CopyFXGrain : Editor
+    public class CopyFXGrain : PostProcessEditor
     {
-        private Grain targetObject;
-        private UnityEngine.Rendering.PostProcessing.Grain grain;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (Grain)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            grain = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Grain>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (grain != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (grain != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (grain != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
+        protected override string label => "grain";
     }
 
 #endif

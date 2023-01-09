@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4593720522486675509}
+  - component: {fileID: 3781535447178177220}
   - component: {fileID: -4877379761744591092}
   - component: {fileID: 572145833013098744}
-  - component: {fileID: 3781535447178177220}
   m_Layer: 8
   m_Name: MotionBlur
   m_TagString: MainCamera
@@ -33,6 +33,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3781535447178177220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4593720522486675657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &-4877379761744591092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,17 +76,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
   defaultVolumeWeight: 1
-  defaultFocusDistance: 0.1
+  defaultShutterAngle: 270
+  defaultSampleCount: 10
   defaultFadeOutDuration: 0
---- !u!114 &3781535447178177220
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4593720522486675657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ChromaticAberration : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class ChromaticAberration : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -164,12 +164,17 @@ namespace NaninovelPostProcess {
             chromaticAberration.fastMode.value = bool.Parse(options[fastIndex]);
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
+            return "time:" + Duration + " weight:" + volume.weight + " spectralLut:" + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + " intensity:" + chromaticAberration.intensity.value + " fastMode:" + chromaticAberration.fastMode.value.ToString().ToLower();
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
         }
 
 #endif
@@ -179,49 +184,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(ChromaticAberration))]
-    public class CopyFXChromaticAberration : Editor
+    public class CopyFXChromaticAberration : PostProcessEditor
     {
-        private ChromaticAberration targetObject;
-        private UnityEngine.Rendering.PostProcessing.ChromaticAberration chromaticAberration;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (ChromaticAberration)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            chromaticAberration = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ChromaticAberration>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]"; 
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (chromaticAberration != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
+        protected override string label => "chromaticAberration";
     }
 
 #endif

@@ -15,7 +15,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class LensDistortion : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class LensDistortion : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -211,12 +211,17 @@ namespace NaninovelPostProcess {
             lensDistortion.scale.value = EditorGUILayout.Slider(lensDistortion.scale.value, 0.01f, 5f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
+            return "time" + Duration + " weight:" + volume.weight + " intensity:" + lensDistortion.intensity.value + " xMultiplier:" + lensDistortion.intensityX.value + " yMultiplier:" + lensDistortion.intensityY.value + " centerX:" + lensDistortion.centerX.value + " centerY:" + lensDistortion.centerY.value + " scale:" + lensDistortion.scale.value;
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
         }
 
 #endif
@@ -226,53 +231,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(LensDistortion))]
-    public class CopyFXLensDistortion : Editor
+    public class CopyFXLensDistortion : PostProcessEditor
     {
-        private LensDistortion targetObject;
-        private UnityEngine.Rendering.PostProcessing.LensDistortion lensDistortion;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (LensDistortion)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            lensDistortion = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.LensDistortion>();
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)" + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)" + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (lensDistortion != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
+        protected override string label => "lensDistortion";
     }
 
 #endif

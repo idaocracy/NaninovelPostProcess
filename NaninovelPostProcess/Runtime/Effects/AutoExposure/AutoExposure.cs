@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class AutoExposure : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class AutoExposure : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected Vector2 Filtering { get; private set; }
         protected float Minimum { get; private set; }
@@ -219,12 +219,18 @@ namespace NaninovelPostProcess
                 GUILayout.EndHorizontal();
             }
 
-            return Duration + "," + GetString();
+            return GetSpawnString();
         }
 
-        public string GetString()
+        public string GetCommandString()
         {
-            return volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
+            return "time:" + Duration + " weight:" + volume.weight + " filteringX:" + autoExposure.filtering.value.x + " filteringY:" + autoExposure.filtering.value.y + " minimum:" + autoExposure.minLuminance.value + " maximum:" + autoExposure.maxLuminance.value + " exposureCompensation:" +
+                  autoExposure.keyValue.value + " progressiveOrFixed:" + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? " progressiveSpeedUP:" + autoExposure.speedUp.value + " progressiveSpeedDown:" + autoExposure.speedDown.value : String.Empty);
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
                   autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
         }
 
@@ -235,50 +241,9 @@ namespace NaninovelPostProcess
     #if UNITY_EDITOR
 
     [CustomEditor(typeof(AutoExposure))]
-    public class CopyFXAutoExposure : Editor
+    public class CopyFXAutoExposure : PostProcessEditor
     {
-        private AutoExposure targetObject;
-        private UnityEngine.Rendering.PostProcessing.AutoExposure autoExposure;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (AutoExposure)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            autoExposure = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.AutoExposure>();
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (autoExposure != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
+        protected override string label => "autoExposure";
     }
 
     #endif

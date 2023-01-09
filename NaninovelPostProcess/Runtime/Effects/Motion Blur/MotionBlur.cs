@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-using Codice.Client.BaseCommands.Acl;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,7 +15,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class MotionBlur : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class MotionBlur : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -133,12 +132,18 @@ namespace NaninovelPostProcess {
             EditorGUILayout.LabelField("Sample Count", GUILayout.Width(190));
             motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
             GUILayout.EndHorizontal();
-            return GetCommandString();
+
+            return GetSpawnString();
         }
 
         public string GetCommandString()
         {
             return "time:" + Duration + " weight:" + volume.weight + " shutterAngle:" + motionBlur.shutterAngle.value + " sampleCount:" + motionBlur.sampleCount.value;
+        }
+
+        public string GetSpawnString()
+        {
+            return Duration + "," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
         }
 #endif
     }
@@ -146,51 +151,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(MotionBlur))]
-    public class CopyFXMotionBlur : Editor
+    public class CopyFXMotionBlur : PostProcessEditor
     {
-        private MotionBlur targetObject;
-        private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (MotionBlur)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            motionBlur = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>();
-
-        }
-
-        public override void OnInspectorGUI()
-        {
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy motionBlur (@)", GUILayout.Height(50)))
-            {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "@motionBlur " + targetObject.GetCommandString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy motionBlur ([])", GUILayout.Height(50)))
-            {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "[motionBlur " + targetObject.GetCommandString() + "]"; 
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy spawn params", GUILayout.Height(50)))
-            {
-                if (motionBlur != null) GUIUtility.systemCopyBuffer = "params:(time)," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-
-            base.DrawDefaultInspector();
-        }
+        protected override string label => "motionBlur";
     }
 
 #endif
