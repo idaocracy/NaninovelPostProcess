@@ -11,6 +11,14 @@ namespace Naninovel.PostProcess
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter TonemapperMode;
+
+        public DecimalParameter ToeStrength;
+        public DecimalParameter ToeLength;
+        public DecimalParameter ShoulderStrength;
+        public DecimalParameter ShoulderLength;
+        public DecimalParameter ShoulderAngle;
+        public DecimalParameter ToneGamma;
+
         public DecimalParameter Temperature;
         public DecimalParameter Tint;
         public DecimalParameter PostExposure;
@@ -26,7 +34,6 @@ namespace Naninovel.PostProcess
         public DecimalListParameter Gamma;
         public DecimalListParameter Gain;
 
-
         protected override string Path => "ColorGradingHDR";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
@@ -35,6 +42,11 @@ namespace Naninovel.PostProcess
             ToSpawnParam(FadeDuration),
             ToSpawnParam(Weight),
             ToSpawnParam(TonemapperMode),
+            ToSpawnParam(ToeStrength),
+            ToSpawnParam(ToeLength),
+            ToSpawnParam(ShoulderStrength),
+            ToSpawnParam(ShoulderLength),
+            ToSpawnParam(ShoulderAngle),
             ToSpawnParam(Temperature),
             ToSpawnParam(Tint),
             ToSpawnParam(PostExposure),

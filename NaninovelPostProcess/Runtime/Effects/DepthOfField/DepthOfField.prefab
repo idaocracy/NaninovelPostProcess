@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: -4877379761744591092}
   - component: {fileID: 6046142289734016226}
   m_Layer: 8
-  m_Name: DoF
+  m_Name: DepthOfField
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

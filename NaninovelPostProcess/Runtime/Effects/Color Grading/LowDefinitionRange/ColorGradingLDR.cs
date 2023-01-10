@@ -17,10 +17,10 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingLDR : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class ColorGradingLDR : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
-        protected float Contribution { get; private set; }
         protected string LookUpTexture { get; private set; }
+        protected float Contribution { get; private set; }
         protected float Temperature { get; private set; }
         protected float Tint { get; private set; }
         protected Color ColorFilter { get; private set; }
@@ -323,9 +323,7 @@ namespace NaninovelPostProcess {
         {
             EditorGUIUtility.labelWidth = 190;
 
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            FloatField("Fade-in time", Duration);
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
@@ -344,7 +342,6 @@ namespace NaninovelPostProcess {
             EditorGUILayout.LabelField("Contribution", GUILayout.Width(190));
             volume.weight = EditorGUILayout.Slider(colorGrading.ldrLutContribution.value, 0f, 1f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
-                
 
             GUILayout.BeginHorizontal();
             colorGrading.temperature.value = EditorGUILayout.FloatField("Temperature", colorGrading.temperature.value, GUILayout.Width(413));
@@ -407,20 +404,31 @@ namespace NaninovelPostProcess {
             colorGrading.gain.value = EditorGUILayout.Vector4Field("", colorGrading.gain.value, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return base.GetSpawnString();
         }
 
-        public string GetString()
+        public Dictionary<string, string> ParameterList()
         {
-            return volume.weight + "," + (colorGrading.ldrLut.value != null ? colorGrading.ldrLut.value.name : string.Empty) + "," + colorGrading.ldrLutContribution.value + "," +
-            colorGrading.temperature.value + "," + colorGrading.tint.value + "," +
-            "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
-            colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
-            colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
-            colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
-            colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
-            colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
-            colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "intensity", colorGrading.ldrLut.value.name},
+                { "contribution", colorGrading.ldrLutContribution.value.ToString()},
+                { "temperature", colorGrading.temperature.value.ToString()},
+                { "tint", colorGrading.tint.value.ToString()},
+                { "colorFilter", "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value)},
+                { "hueShift", colorGrading.hueShift.value.ToString()},
+                { "saturation", colorGrading.saturation.value.ToString()},
+                { "contrast", colorGrading.contrast.value.ToString()},
+                { "redChannel", colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value},
+                { "greenChannel", colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value},
+                { "blueChannel", colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value},
+                { "lift", colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w},
+                { "gamma", colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w},
+                { "gain", colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w},
+
+            };
         }
 #endif
     }
@@ -429,49 +437,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(ColorGradingLDR))]
-    public class CopyFXColorGradingLDR : Editor
+    public class CopyFXColorGradingLDR : PostProcessObjectEditor
     {
-        private ColorGradingLDR targetObject;
-        private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (ColorGradingLDR)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-        }
+        protected override string label => "colorGradingLDR";
     }
 #endif
 

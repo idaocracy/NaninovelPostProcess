@@ -9,6 +9,9 @@ namespace Naninovel.PostProcess
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
+        public StringParameter ClassicOrMask;
+
+        //Classic parameters
         public StringParameter Color;
         public DecimalParameter CenterX;
         public DecimalParameter CenterY;
@@ -17,6 +20,10 @@ namespace Naninovel.PostProcess
         public DecimalParameter Roundness;
         public BooleanParameter Rounded;
 
+        //Mask parameters
+        public StringParameter MaskTexture;
+        public StringParameter MaskOpacity;
+
         protected override string Path => "Vignette";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
@@ -24,7 +31,7 @@ namespace Naninovel.PostProcess
             new List<string> {
             ToSpawnParam(FadeDuration),
             ToSpawnParam(Weight),
-            ToSpawnParam("Classic"),
+            ToSpawnParam(ClassicOrMask),
             ToSpawnParam(Color),
             ToSpawnParam(CenterX),
             ToSpawnParam(CenterY),

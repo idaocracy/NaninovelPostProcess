@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Vignette : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class Vignette : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -293,39 +293,29 @@ namespace NaninovelPostProcess {
                 GUILayout.EndHorizontal();
             }
 
-            return GetSpawnString();
+            return base.GetSpawnString();
 
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "classicOrMask", vignette.mode.value.ToString()},
+                { "color",  "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value)},
+                { "center", vignette.center.value.ToString()},
+                { "intensity", vignette.intensity.value.ToString()},
+                { "smoothness", vignette.smoothness.value.ToString()},
+                { "roundness", vignette.roundness.value.ToString()},
+                { "rounded", vignette.roundness.value.ToString().ToLower()},
+                { "maskTexture", vignette.roundness.value.ToString().ToLower()},
+                { "maskOpacity", vignette.roundness.value.ToString().ToLower()}
 
-            if (vignette.mode.value.ToString() == "Classic")
-            {
-                return "time:" + Duration + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
-                            vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
-            }
-            else
-            {
-                return "time:" + Duration + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
-            }
-            
+            };
         }
 
-        public string GetSpawnString()
-        {
-
-            if (vignette.mode.value.ToString() == "Classic")
-            {
-                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + vignette.center.value.x + "," + vignette.center.value.y + "," + vignette.intensity.value + "," +
-                            vignette.smoothness.value + "," + vignette.roundness.value + "," + vignette.rounded.value.ToString().ToLower();
-            }
-            else
-            {
-                return Duration + "," + volume.weight + "," + vignette.mode.value + "," + "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value) + "," + (vignette.mask.value != null ? vignette.mask.value.name : string.Empty) + "," + vignette.opacity.value;
-            }
-
-        }
 #endif
     }
 
@@ -333,7 +323,7 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Vignette))]
-    public class CopyFXVignette : PostProcessEditor
+    public class CopyFXVignette : PostProcessObjectEditor
     {
         protected override string label => "vignette";
     }

@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class DepthOfField : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class DepthOfField : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -171,17 +171,20 @@ namespace NaninovelPostProcess {
             dof.kernelSize.value = (KernelSize)sizeIndex;
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " focusDistance:" + dof.focusDistance.value + " aperture:" + dof.aperture.value + " focalLength:" + dof.focalLength.value + " kernelSize:" + dof.kernelSize.value;
-        }
-
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + dof.focusDistance.value + "," + dof.aperture.value + "," + dof.focalLength.value + "," + dof.kernelSize.value;
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "intensity", dof.focusDistance.value.ToString()},
+                { "aperture", dof.aperture.value.ToString()},
+                { "focalLength", dof.focalLength.value.ToString()},
+                { "maxBlurSize", dof.kernelSize.value.ToString()},
+            };
         }
 
 #endif
@@ -191,7 +194,7 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(DepthOfField))]
-    public class CopyFXDoF : PostProcessEditor
+    public class CopyFXDoF : PostProcessObjectEditor
     {
         protected override string label => "doF";
     }

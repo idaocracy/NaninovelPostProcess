@@ -1,40 +1,56 @@
 ﻿#if UNITY_POST_PROCESSING_STACK_V2
 using UnityEngine;
 using Naninovel;
-using NaninovelPostProcess;
 using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
+using Naninovel.Commands;
 
 namespace NaninovelPostProcess
 {
-    public class PostProcessObjectManager : MonoBehaviour
+
+
+    public class PostProcessObject : MonoBehaviour
     {
         private PostProcessingConfiguration postProcessingConfiguration;
 
         public interface ISceneAssistant
         {
-            string GetCommandString();
-            string GetSpawnString();
+            Dictionary<string, string> ParameterList();
         }
 
         private void Awake()
         {
             postProcessingConfiguration = Engine.GetConfiguration<PostProcessingConfiguration>();
             if (postProcessingConfiguration.OverrideObjectsLayer) gameObject.layer = postProcessingConfiguration.PostProcessingLayer;
+            
         }
 
+        public virtual string GetCommandString() => string.Join(" ", _sceneAssistant.ParameterList().Select(x => x.Key + ":" + x.Value));
+        public virtual string GetSpawnString() => string.Join(",", _sceneAssistant.ParameterList().Select(x => x.Value));
+
+        protected float FloatField(string label, float value)
+        {
+            GUILayout.BeginHorizontal();
+            value = EditorGUILayout.FloatField(label, value, GUILayout.Width(413));
+            GUILayout.EndHorizontal();
+
+            return value;
+        }
+        
     }
 
 #if UNITY_EDITOR
-    public class PostProcessEditor : Editor
+    public class PostProcessObjectEditor : Editor
     {
-        private PostProcessObjectManager.ISceneAssistant targetObject;
+        private PostProcessObject targetObject;
         protected virtual string label => null;
         public bool LogResult;
         private bool showDefaultValues;
 
         private void Awake()
         {
-            targetObject = (PostProcessObjectManager.ISceneAssistant)target;
+            targetObject = (PostProcessObject)target;
         }
 
         public override void OnInspectorGUI()

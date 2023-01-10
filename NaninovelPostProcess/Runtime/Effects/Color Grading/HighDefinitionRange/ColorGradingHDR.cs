@@ -17,7 +17,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingHDR : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class ColorGradingHDR : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected string TonemapperMode { get; private set; }
         protected float ToeStrength { get; private set; }
@@ -523,23 +523,38 @@ namespace NaninovelPostProcess {
             colorGrading.gain.value = EditorGUILayout.Vector4Field("", colorGrading.gain.value, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return Duration + "," + GetString();
+            return base.GetSpawnString();
         }
 
-        public string GetString()
+        public Dictionary<string,string> ParameterList()
         {
-            return volume.weight + "," + colorGrading.tonemapper.value.ToString() + "," +
-                 (colorGrading.tonemapper.value.ToString() == "Custom" ? colorGrading.toneCurveToeStrength.value + "," + colorGrading.toneCurveToeLength.value + "," + 
-                 colorGrading.toneCurveShoulderStrength.value + "," + colorGrading.toneCurveShoulderLength.value + "," + colorGrading.toneCurveShoulderAngle.value + "," + colorGrading.toneCurveGamma.value + "," : string.Empty)  +
-                 colorGrading.temperature.value + "," + colorGrading.tint.value + "," + colorGrading.postExposure.value + "," +
-                 "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value) + "," + colorGrading.hueShift.value + "," + colorGrading.saturation.value + "," + colorGrading.contrast.value + "," +
-                 colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value + "," +
-                 colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value + "," +
-                 colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value + "," +
-                 colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w + "," +
-                 colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w + "," +
-                 colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w;
+            return new Dictionary<string, string>()
+            {
+                {"time", volume.weight.ToString()},
+                {"weight", volume.weight.ToString()},
+                {"mode", colorGrading.tonemapper.value.ToString()},
+                {"toeStrength", colorGrading.toneCurveToeStrength.value.ToString()},
+                {"toeLength", colorGrading.toneCurveToeLength.value.ToString()},
+                {"shoulderStrength", colorGrading.toneCurveShoulderStrength.value.ToString()},
+                {"shoulderLength", colorGrading.toneCurveShoulderLength.value.ToString()},
+                {"shoulderAngle", colorGrading.toneCurveShoulderAngle.value.ToString()},
+                {"toneGamma", colorGrading.toneCurveGamma.value.ToString()},
+                {"temperature", colorGrading.temperature.value.ToString()},
+                {"tint", colorGrading.tint.value.ToString()},
+                {"postExposure", colorGrading.postExposure.value.ToString()},
+                {"colorFilter", "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value)},
+                {"hueShift", colorGrading.hueShift.value.ToString()},
+                {"saturation", colorGrading.saturation.value.ToString()},
+                {"contrast", colorGrading.contrast.value.ToString()},
+                {"redChannel", colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value},
+                {"greenChannel", colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value},
+                {"blueChannel", colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value},
+                {"lift", colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w},
+                {"gamma", colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w},
+                {"gain", colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w},
+            };
         }
+
 #endif
     }
 
@@ -547,49 +562,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(ColorGradingHDR))]
-    public class CopyFXColorGradingHDR : Editor
+    public class CopyFXColorGradingHDR : PostProcessObjectEditor
     {
-        private ColorGradingHDR targetObject;
-        private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (ColorGradingHDR)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-        }
+        protected override string label => "colorGradingHDR";
     }
 #endif
 

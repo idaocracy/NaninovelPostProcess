@@ -15,7 +15,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class MotionBlur : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class MotionBlur : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -133,25 +133,27 @@ namespace NaninovelPostProcess {
             motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " shutterAngle:" + motionBlur.shutterAngle.value + " sampleCount:" + motionBlur.sampleCount.value;
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "shutterAngle", motionBlur.shutterAngle.value.ToString()},
+                { "sampleCount", motionBlur.shutterAngle.value.ToString()},
+            };
         }
 
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + motionBlur.shutterAngle.value + "," + motionBlur.sampleCount.value;
-        }
 #endif
     }
 
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(MotionBlur))]
-    public class CopyFXMotionBlur : PostProcessEditor
+    public class CopyFXMotionBlur : PostProcessObjectEditor
     {
         protected override string label => "motionBlur";
     }

@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class AutoExposure : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class AutoExposure : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected Vector2 Filtering { get; private set; }
         protected float Minimum { get; private set; }
@@ -219,19 +219,27 @@ namespace NaninovelPostProcess
                 GUILayout.EndHorizontal();
             }
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " filteringX:" + autoExposure.filtering.value.x + " filteringY:" + autoExposure.filtering.value.y + " minimum:" + autoExposure.minLuminance.value + " maximum:" + autoExposure.maxLuminance.value + " exposureCompensation:" +
-                  autoExposure.keyValue.value + " progressiveOrFixed:" + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? " progressiveSpeedUP:" + autoExposure.speedUp.value + " progressiveSpeedDown:" + autoExposure.speedDown.value : String.Empty);
-        }
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "filteringX", autoExposure.filtering.value.x.ToString()},
+                { "filteringY", autoExposure.filtering.value.y.ToString()},
+                { "minLuminance", autoExposure.minLuminance.value.ToString()},
+                { "maxLuminance", autoExposure.maxLuminance.value.ToString()},
+                { "exposureCompensation", autoExposure.keyValue.value.ToString()},
+                { "progressiveOrFixed", autoExposure.eyeAdaptation.value.ToString()},
+                { "progressiveOrFixed", autoExposure.eyeAdaptation.value.ToString()},
+                { "progressiveSpeedUp", autoExposure.speedUp.value.ToString()},
+                { "progressiveSpeedDown", autoExposure.speedDown.value.ToString()},
 
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + autoExposure.filtering.value.x + "," + autoExposure.filtering.value.y + "," + autoExposure.minLuminance.value + "," + autoExposure.maxLuminance.value + "," +
-                  autoExposure.keyValue.value + "," + autoExposure.eyeAdaptation.value + (autoExposure.eyeAdaptation.value.ToString() == "Progressive" ? "," + autoExposure.speedUp.value + "," + autoExposure.speedDown.value : String.Empty);
+            };
+
         }
 
 #endif
@@ -241,7 +249,7 @@ namespace NaninovelPostProcess
     #if UNITY_EDITOR
 
     [CustomEditor(typeof(AutoExposure))]
-    public class CopyFXAutoExposure : PostProcessEditor
+    public class CopyFXAutoExposure : PostProcessObjectEditor
     {
         protected override string label => "autoExposure";
     }

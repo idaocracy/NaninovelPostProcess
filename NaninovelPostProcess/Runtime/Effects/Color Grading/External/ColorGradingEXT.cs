@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingEXT : MonoBehaviour, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class ColorGradingEXT : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected string LookUpTexture { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -140,15 +140,20 @@ namespace NaninovelPostProcess {
             maskIndex = EditorGUILayout.Popup(maskIndex, maskTexturesArray, GUILayout.Height(20), GUILayout.Width(220));
             colorGrading.externalLut.value = lookUpTextures.FirstOrDefault(s => s.name == lookUpTextureIds[maskIndex]) ?? null;
             GUILayout.EndHorizontal();
-            
 
-            return Duration + "," + GetString();
+            return base.GetSpawnString();
         }
 
-        public string GetString()
+        public Dictionary<string, string> ParameterList()
         {
-            return volume.weight + "," + (colorGrading.externalLut.value != null ? colorGrading.externalLut.value.name : string.Empty);
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "lookUpTexture", colorGrading.externalLut.value.ToString()},
+            };
         }
+
 #endif
     }
 
@@ -156,49 +161,9 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(ColorGradingEXT))]
-    public class CopyFXColorGradingEXT : Editor
+    public class CopyFXColorGradingEXT : PostProcessObjectEditor
     {
-        private ColorGradingEXT targetObject;
-        private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
-        private PostProcessVolume volume;
-        public bool LogResult;
-
-        private void Awake()
-        {
-            targetObject = (ColorGradingEXT)target;
-            volume = targetObject.gameObject.GetComponent<PostProcessVolume>();
-            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>();
-        }
-
-        public override void OnInspectorGUI()
-        {
-            DrawDefaultInspector();
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params (@)", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "@spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy command and params ([])", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "[spawn " + targetObject.gameObject.name + " params:(time)," + targetObject.GetString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Button("Copy params", GUILayout.Height(50)))
-            {
-                if (colorGrading != null) GUIUtility.systemCopyBuffer = "(time)," + targetObject.GetString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(20f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-        }
+        protected override string label => "colorGradingEXT";
     }
 #endif
 

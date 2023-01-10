@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using Codice.CM.Client.Differences.Graphic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,7 +17,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Bloom : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class Bloom : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Intensity { get; private set; }
         protected float Threshold { get; private set; }
@@ -280,21 +281,30 @@ namespace NaninovelPostProcess
             bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
 
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " intensity:" + bloom.intensity.value + " threshold:" + bloom.threshold.value + " softKnee:" + bloom.softKnee.value + " clamp:" + bloom.clamp.value + " diffusion:" + bloom.diffusion.value + " anamorphicRatio:" + bloom.anamorphicRatio.value + " color:" +
-                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + " fastMode:" + bloom.fastMode.value.ToString().ToLower() + (bloom.dirtTexture.value != null ? " dirtTexture:" + bloom.dirtTexture.value.name + " dirtIntensity:" + bloom.dirtIntensity.value : string.Empty);
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "intensity", bloom.intensity.value.ToString()},
+                { "threshold", bloom.threshold.value.ToString()},
+                { "softKnee", bloom.softKnee.value.ToString()},
+                { "clamp", bloom.clamp.value.ToString()},
+                { "diffusion", bloom.diffusion.value.ToString()},
+                { "anamorphicRatio", bloom.diffusion.value.ToString()},
+                { "color", "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value)},
+                { "fastMode", "#" + bloom.fastMode.ToString().ToLower()},
+                { "dirtTexture", bloom.dirtTexture.value.name},
+                { "dirtIntensity", bloom.dirtIntensity.value.ToString()}
+ 
+            };
         }
 
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + bloom.intensity.value + "," + bloom.threshold.value + "," + bloom.softKnee.value + "," + bloom.clamp.value + "," + bloom.diffusion.value + "," + bloom.anamorphicRatio.value + "," +
-                "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value) + "," + bloom.fastMode.value.ToString().ToLower() + (bloom.dirtTexture.value != null ? "," + bloom.dirtTexture.value.name + "," + bloom.dirtIntensity.value : string.Empty);
-        }
 #endif
     }
 
@@ -302,7 +312,7 @@ namespace NaninovelPostProcess
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Bloom))]
-    public class CopyFXBloom : PostProcessEditor
+    public class CopyFXBloom : PostProcessObjectEditor
     {
         protected override string label => "bloom";
     }

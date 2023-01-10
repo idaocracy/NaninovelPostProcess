@@ -15,7 +15,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class LensDistortion : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class LensDistortion : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -211,17 +211,22 @@ namespace NaninovelPostProcess {
             lensDistortion.scale.value = EditorGUILayout.Slider(lensDistortion.scale.value, 0.01f, 5f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time" + Duration + " weight:" + volume.weight + " intensity:" + lensDistortion.intensity.value + " xMultiplier:" + lensDistortion.intensityX.value + " yMultiplier:" + lensDistortion.intensityY.value + " centerX:" + lensDistortion.centerX.value + " centerY:" + lensDistortion.centerY.value + " scale:" + lensDistortion.scale.value;
-        }
-
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + lensDistortion.intensity.value + "," + lensDistortion.intensityX.value + "," + lensDistortion.intensityY.value + "," + lensDistortion.centerX.value + "," + lensDistortion.centerY.value + "," + lensDistortion.scale.value;
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "intensity", lensDistortion.intensity.value.ToString()},
+                { "xMultiplier", lensDistortion.intensityX.value.ToString()},
+                { "yMultiplier", lensDistortion.intensityY.value.ToString()},
+                { "centerX", lensDistortion.centerX.value.ToString()},
+                { "centerY", lensDistortion.centerY.value.ToString()},
+                { "scale", lensDistortion.scale.value.ToString()},
+            };
         }
 
 #endif
@@ -231,7 +236,7 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(LensDistortion))]
-    public class CopyFXLensDistortion : PostProcessEditor
+    public class CopyFXLensDistortion : PostProcessObjectEditor
     {
         protected override string label => "lensDistortion";
     }

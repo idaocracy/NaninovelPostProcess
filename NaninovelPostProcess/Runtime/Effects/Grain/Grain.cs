@@ -17,7 +17,7 @@ namespace NaninovelPostProcess
 { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Grain : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class Grain : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -25,10 +25,7 @@ namespace NaninovelPostProcess
         protected float Intensity { get; private set; }
         protected float Size { get; private set; }
         protected float LuminanceContribution { get; private set; }
-
         protected float FadeOutDuration { get; private set; }
-
-
 
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
@@ -169,18 +166,22 @@ namespace NaninovelPostProcess
             grain.lumContrib.value = EditorGUILayout.Slider(grain.lumContrib.value, 0f, 1f, GUILayout.Width(220));
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " colored:" + grain.colored.value.ToString().ToLower() + " intensity:" + grain.intensity.value + " size:" + grain.size.value + " luminanceContribution:" + grain.lumContrib.value;
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "colored", grain.colored.value.ToString().ToLower()},
+                { "intensity", grain.intensity.value.ToString()},
+                { "size", grain.size.value.ToString()},
+                { "luminanceContribution", grain.lumContrib.value.ToString()},
+            };
         }
 
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + grain.colored.value.ToString().ToLower() + "," + grain.intensity.value + "," + grain.size.value + "," + grain.lumContrib.value;
-        }
 #endif
     }
 
@@ -188,7 +189,7 @@ namespace NaninovelPostProcess
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(Grain))]
-    public class CopyFXGrain : PostProcessEditor
+    public class CopyFXGrain : PostProcessObjectEditor
     {
         protected override string label => "grain";
     }

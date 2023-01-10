@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ChromaticAberration : PostProcessObjectManager, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObjectManager.ISceneAssistant
+    public class ChromaticAberration : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
     {
         protected float Duration { get; private set; }
         protected float VolumeWeight { get; private set; }
@@ -134,9 +134,7 @@ namespace NaninovelPostProcess {
         {
             EditorGUIUtility.labelWidth = 190;
 
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            Duration = FloatField("Fade-in time", Duration);
 
             GUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
@@ -164,17 +162,19 @@ namespace NaninovelPostProcess {
             chromaticAberration.fastMode.value = bool.Parse(options[fastIndex]);
             GUILayout.EndHorizontal();
 
-            return GetSpawnString();
+            return base.GetSpawnString();
         }
 
-        public string GetCommandString()
+        public Dictionary<string, string> ParameterList()
         {
-            return "time:" + Duration + " weight:" + volume.weight + " spectralLut:" + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + " intensity:" + chromaticAberration.intensity.value + " fastMode:" + chromaticAberration.fastMode.value.ToString().ToLower();
-        }
-
-        public string GetSpawnString()
-        {
-            return Duration + "," + volume.weight + "," + (chromaticAberration.spectralLut.value != null ? chromaticAberration.spectralLut.value.name : string.Empty) + "," + chromaticAberration.intensity.value + "," + chromaticAberration.fastMode.value.ToString().ToLower();
+            return new Dictionary<string, string>()
+            {
+                { "time", Duration.ToString()},
+                { "weight", volume.weight.ToString()},
+                { "spectralLut", chromaticAberration.spectralLut.value.name},
+                { "intensity", chromaticAberration.intensity.value.ToString()},
+                { "fastMode", chromaticAberration.fastMode.value.ToString().ToLower()},
+            };
         }
 
 #endif
@@ -184,7 +184,7 @@ namespace NaninovelPostProcess {
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(ChromaticAberration))]
-    public class CopyFXChromaticAberration : PostProcessEditor
+    public class CopyFXChromaticAberration : PostProcessObjectEditor
     {
         protected override string label => "chromaticAberration";
     }

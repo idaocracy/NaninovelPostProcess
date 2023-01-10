@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4593720522486675509}
   - component: {fileID: -4877379761744591092}
-  - component: {fileID: -3518409669405606627}
+  - component: {fileID: 4178147434832751836}
   m_Layer: 8
   m_Name: ChromaticAberration
   m_TagString: MainCamera
@@ -49,7 +49,7 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   priority: 0
---- !u!114 &-3518409669405606627
+--- !u!114 &4178147434832751836
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -67,4 +67,4 @@ MonoBehaviour:
   spectralLuts: []
   defaultIntensity: 1
   defaultFastMode: 0
-  defaultFadeOutDuration: 0
+  defaultFadeOutDuration: 0.35

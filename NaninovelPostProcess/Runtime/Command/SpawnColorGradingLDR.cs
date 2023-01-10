@@ -10,8 +10,8 @@ namespace Naninovel.PostProcess
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
-        public DecimalParameter Contribution;
         public StringParameter LookUpTexture;
+        public DecimalParameter Contribution;
         public DecimalParameter Temperature;
         public DecimalParameter Tint;
         public StringParameter ColorFilter;
@@ -25,7 +25,6 @@ namespace Naninovel.PostProcess
         public DecimalListParameter Lift;
         public DecimalListParameter Gamma;
         public DecimalListParameter Gain;
-
 
         protected override string Path => "ColorGradingLDR";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
