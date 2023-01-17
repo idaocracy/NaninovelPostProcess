@@ -33,8 +33,6 @@ namespace NaninovelPostProcess
         protected float Duration { get; private set; }
         protected float FadeOutDuration { get; private set; }
 
-
-
         private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> thresholdTweener = new Tweener<FloatTween>();
@@ -44,7 +42,6 @@ namespace NaninovelPostProcess
         private readonly Tweener<FloatTween> anamorphicRatioTweener = new Tweener<FloatTween>();
         private readonly Tweener<ColorTween> tintTweener = new Tweener<ColorTween>();
         private readonly Tweener<FloatTween> dirtIntensityTweener = new Tweener<FloatTween>();
-
 
         [Header("Spawn/Fadein Settings")]
         [SerializeField] private float defaultDuration = 0.35f;
@@ -150,6 +147,7 @@ namespace NaninovelPostProcess
 
             dirtTextureIds = dirtTextures.Select(s => s.name).ToList();
             dirtTextureIds.Insert(0, "None");
+
         }
 
         private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
@@ -220,72 +218,23 @@ namespace NaninovelPostProcess
         {
             EditorGUIUtility.labelWidth = 190;
 
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            bloom.intensity.value = EditorGUILayout.FloatField("Intensity", bloom.intensity.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            bloom.threshold.value = EditorGUILayout.FloatField("Threshold", bloom.threshold.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Soft Knee", GUILayout.Width(190));
-            bloom.softKnee.value = EditorGUILayout.Slider(bloom.softKnee.value, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            bloom.clamp.value = EditorGUILayout.FloatField("Clamp", bloom.clamp.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Diffusion", GUILayout.Width(190));
-            bloom.diffusion.value = EditorGUILayout.Slider(bloom.diffusion.value, 1f, 10f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Anamorphic Ratio", GUILayout.Width(190));
-            bloom.anamorphicRatio.value = EditorGUILayout.Slider(bloom.anamorphicRatio.value, -1f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Color", GUILayout.Width(190));
-            bloom.color.value = EditorGUILayout.ColorField(bloom.color.value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Fast Mode", GUILayout.Width(190));
-            string[] options = { "True", "False" };
-            var optionsIndex = Array.IndexOf(options, bloom.fastMode.value.ToString());
-            optionsIndex = EditorGUILayout.Popup(optionsIndex, options, GUILayout.Height(20), GUILayout.Width(220));
-            bloom.fastMode.value = bool.Parse(options[optionsIndex]);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Dirt Texture", GUILayout.Width(190));
-            string[] texturesArray = dirtTextureIds.ToArray();
-            var textureIndex = Array.IndexOf(texturesArray, bloom.dirtTexture.value?.name ?? "None");
-            textureIndex = EditorGUILayout.Popup(textureIndex, texturesArray, GUILayout.Height(20), GUILayout.Width(220));
-            bloom.dirtTexture.value = dirtTextures.FirstOrDefault(s => s.name == dirtTextureIds[textureIndex]) ?? null;
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            Duration = FloatField("Duration", Duration);
+            volume.weight = SliderField("Volume Weight", volume.weight, 0f, 1f);
+            bloom.intensity.value = FloatField("Intensity", bloom.intensity.value);
+            bloom.threshold.value = FloatField("Threshold", bloom.threshold.value);
+            bloom.softKnee.value = SliderField("Soft Knee", bloom.softKnee.value, 0f, 1f);
+            bloom.clamp.value = FloatField("Clamp", bloom.clamp.value);
+            bloom.diffusion.value = SliderField("Diffusion", bloom.diffusion.value, 1f, 10f);
+            bloom.anamorphicRatio.value = SliderField("Anamorphic Ratio", bloom.anamorphicRatio.value, -1f, 1f);
+            bloom.color.value = ColorField("Color", bloom.color.value);
+            bloom.fastMode.value = BooleanField("Fast Mode", bloom.fastMode.value);
+            bloom.dirtTexture.value = TextureField("Dirt Texture", bloom.dirtTexture.value, dirtTextures, dirtTextureIds) ?? null;
+            bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value);
 
             return base.GetSpawnString();
-
         }
 
-        public Dictionary<string, string> ParameterList()
+        public IReadOnlyDictionary<string, string> ParameterList()
         {
             return new Dictionary<string, string>()
             {
@@ -298,13 +247,11 @@ namespace NaninovelPostProcess
                 { "diffusion", bloom.diffusion.value.ToString()},
                 { "anamorphicRatio", bloom.diffusion.value.ToString()},
                 { "color", "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value)},
-                { "fastMode", "#" + bloom.fastMode.ToString().ToLower()},
-                { "dirtTexture", bloom.dirtTexture.value.name},
+                { "fastMode", bloom.fastMode.value.ToString().ToLower()},
+                { "dirtTexture", bloom.dirtTexture.value?.name},
                 { "dirtIntensity", bloom.dirtIntensity.value.ToString()}
- 
             };
         }
-
 #endif
     }
 

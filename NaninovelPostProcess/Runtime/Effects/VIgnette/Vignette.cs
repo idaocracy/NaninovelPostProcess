@@ -297,7 +297,7 @@ namespace NaninovelPostProcess {
 
         }
 
-        public Dictionary<string, string> ParameterList()
+        public IReadOnlyDictionary<string, string> ParameterList()
         {
             return new Dictionary<string, string>()
             {

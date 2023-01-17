@@ -5,40 +5,82 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
 using Naninovel.Commands;
+using System.Runtime.CompilerServices;
+using UnityEngine.Rendering.PostProcessing;
+using System;
 
 namespace NaninovelPostProcess
 {
-
-
     public class PostProcessObject : MonoBehaviour
     {
         private PostProcessingConfiguration postProcessingConfiguration;
 
         public interface ISceneAssistant
         {
-            Dictionary<string, string> ParameterList();
+            IReadOnlyDictionary<string, string> ParameterList();
         }
 
-        private void Awake()
+    private void Awake()
         {
             postProcessingConfiguration = Engine.GetConfiguration<PostProcessingConfiguration>();
             if (postProcessingConfiguration.OverrideObjectsLayer) gameObject.layer = postProcessingConfiguration.PostProcessingLayer;
-            
         }
 
-        public virtual string GetCommandString() => string.Join(" ", _sceneAssistant.ParameterList().Select(x => x.Key + ":" + x.Value));
-        public virtual string GetSpawnString() => string.Join(",", _sceneAssistant.ParameterList().Select(x => x.Value));
+        public string GetCommandString() => (this is ISceneAssistant sceneAssistant) ?  
+            string.Join(" ", sceneAssistant.ParameterList().Where(x => x.Value != null).Select(x => x.Key + ":" + x.Value)) : null;
+        
+        public string GetSpawnString() => (this is ISceneAssistant sceneAssistant) ? 
+            string.Join(",", sceneAssistant.ParameterList().Select(x => x.Value)) : null;
 
-        protected float FloatField(string label, float value)
+        protected virtual float FloatField(string label, float value)
         {
             GUILayout.BeginHorizontal();
             value = EditorGUILayout.FloatField(label, value, GUILayout.Width(413));
             GUILayout.EndHorizontal();
-
             return value;
         }
-        
+
+        protected virtual float SliderField(string label, float value, float minValue, float maxValue)
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(190));
+            value = EditorGUILayout.Slider(value, minValue, maxValue, GUILayout.Width(220));
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
+        protected virtual Color ColorField(string label, Color value)
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Color", GUILayout.Width(190));
+            value = EditorGUILayout.ColorField(value, GUILayout.Width(220));
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
+        protected virtual bool BooleanField(string label, bool value)
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(label, GUILayout.Width(190));
+            value = EditorGUILayout.Toggle(value);
+            GUILayout.EndHorizontal();
+            return value;
+        }
+
+        protected virtual Texture TextureField(string label, Texture value, List<Texture> textures, List<string> textureIds)
+        {
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Dirt Texture", GUILayout.Width(190));
+            string[] texturesArray = textureIds.ToArray();
+            var textureIndex = Array.IndexOf(texturesArray, value?.name ?? "None");
+            textureIndex = EditorGUILayout.Popup(textureIndex, texturesArray, GUILayout.Height(20), GUILayout.Width(220));
+            value = textures.FirstOrDefault(s => s.name == textureIds[textureIndex]) ?? null;
+            GUILayout.EndHorizontal();
+            return value;
+            
+        }
     }
+
 
 #if UNITY_EDITOR
     public class PostProcessObjectEditor : Editor

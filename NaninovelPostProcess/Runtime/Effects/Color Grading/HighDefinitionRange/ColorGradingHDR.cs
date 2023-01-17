@@ -526,11 +526,11 @@ namespace NaninovelPostProcess {
             return base.GetSpawnString();
         }
 
-        public Dictionary<string,string> ParameterList()
+        public IReadOnlyDictionary<string,string> ParameterList()
         {
             return new Dictionary<string, string>()
             {
-                {"time", volume.weight.ToString()},
+                {"time", Duration.ToString()},
                 {"weight", volume.weight.ToString()},
                 {"mode", colorGrading.tonemapper.value.ToString()},
                 {"toeStrength", colorGrading.toneCurveToeStrength.value.ToString()},

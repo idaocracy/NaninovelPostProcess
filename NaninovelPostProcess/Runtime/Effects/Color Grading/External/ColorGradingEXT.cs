@@ -144,13 +144,13 @@ namespace NaninovelPostProcess {
             return base.GetSpawnString();
         }
 
-        public Dictionary<string, string> ParameterList()
+        public IReadOnlyDictionary<string, string> ParameterList()
         {
             return new Dictionary<string, string>()
             {
                 { "time", Duration.ToString()},
                 { "weight", volume.weight.ToString()},
-                { "lookUpTexture", colorGrading.externalLut.value.ToString()},
+                { "lookUpTexture", colorGrading.externalLut.value?.name},
             };
         }
 
