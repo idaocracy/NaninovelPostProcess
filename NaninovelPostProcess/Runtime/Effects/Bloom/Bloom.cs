@@ -9,7 +9,6 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-using Codice.CM.Client.Differences.Graphic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -17,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Bloom : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class Bloom : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ITextureParameterized, ISceneAssistant
     {
         protected float Intensity { get; private set; }
         protected float Threshold { get; private set; }
@@ -29,11 +28,7 @@ namespace NaninovelPostProcess
         protected bool FastMode { get; private set; }
         protected string DirtTexture { get; private set; }
         protected float DirtIntensity { get; private set; }
-        protected float VolumeWeight { get; private set; }
-        protected float Duration { get; private set; }
-        protected float FadeOutDuration { get; private set; }
 
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> thresholdTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> softKneeTweener = new Tweener<FloatTween>();
@@ -43,39 +38,28 @@ namespace NaninovelPostProcess
         private readonly Tweener<ColorTween> tintTweener = new Tweener<ColorTween>();
         private readonly Tweener<FloatTween> dirtIntensityTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
-
         [Header("Bloom Settings")]
-        [SerializeField] private float defaultIntensity = 10f;
-        [SerializeField] private float defaultThreshold = 1f;
-        [SerializeField] private float defaultSoftKnee = 0.5f;
+        [SerializeField, UnityEngine.Min(0f)] private float defaultIntensity = 10f;
+        [SerializeField, UnityEngine.Min(0f)] private float defaultThreshold = 1f;
+        [SerializeField, Range (0f, 1f)] private float defaultSoftKnee = 0.5f;
         [SerializeField] private float defaultClamp = 65472f;
-        [SerializeField] private float defaultDiffusion = 7f;
-        [SerializeField] private float defaultAnamorphicRatio = 0f;
-        [SerializeField] private Color defaultColor = Color.white;
-        [SerializeField] private bool defaultFastMode= false;
+        [SerializeField, Range(1f, 10f)] private float defaultDiffusion = 7f;
+        [SerializeField, Range(-1f, 1f)] private float defaultAnamorphicRatio = 0f;
+        [SerializeField, ColorUsage(false, true)] private Color defaultColor = Color.white;
+        [SerializeField] private bool defaultFastMode = false;
 
         [SerializeField] private string defaultDirtTextureId = string.Empty;
         [SerializeField] private List<Texture> dirtTextures = new List<Texture>();
-        [SerializeField] private float defaultDirtIntensity = 0f;
+        [SerializeField, UnityEngine.Min(0f)] private float defaultDirtIntensity = 0f;
 
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
-
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.Bloom bloom;
 
-        private List<string> dirtTextureIds = new List<string>();
+        public List<Texture> TextureItems() => dirtTextures;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
+            base.SetSpawnParameters(parameters, asap);
 
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
             Intensity = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultIntensity;
             Threshold = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultThreshold;
             SoftKnee = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultSoftKnee;
@@ -98,7 +82,7 @@ namespace NaninovelPostProcess
         public async UniTask ChangeBloomAsync(float duration, float volumeWeight, float intensity, float threshold, float softKnee, float clamp, float diffusion, float anamorphicRatio, Color tint, bool fastMode, string dirtTexture, float dirtIntensity, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             if (bloom.intensity.value != intensity) tasks.Add(ChangeIntensityAsync(intensity, duration, asyncToken));
             if (bloom.threshold.value != threshold) tasks.Add(ChangeThresholdAsync(threshold, duration, asyncToken));
             if (bloom.softKnee.value != softKnee) tasks.Add(ChangeSoftKneeAsync(softKnee, duration, asyncToken));
@@ -113,19 +97,7 @@ namespace NaninovelPostProcess
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
-        {
-            CompleteTweens();
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void CompleteTweens()
+        protected override void CompleteTweens()
         {
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
             if (intensityTweener.Running) intensityTweener.CompleteInstantly();
@@ -138,23 +110,13 @@ namespace NaninovelPostProcess
             if (dirtIntensityTweener.Running) dirtIntensityTweener.CompleteInstantly();
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            bloom = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Bloom>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.Bloom>();
+            base.Awake();
+            bloom = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Bloom>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.Bloom>();
             bloom.SetAllOverridesTo(true);
-            volume.weight = 0f;
-
-            dirtTextureIds = dirtTextures.Select(s => s.name).ToList();
-            dirtTextureIds.Insert(0, "None");
-
         }
 
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
-        }
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await intensityTweener.RunAsync(new FloatTween(bloom.intensity.value, intensity, duration, x => bloom.intensity.value = x), asyncToken, bloom);
@@ -165,7 +127,6 @@ namespace NaninovelPostProcess
             if (duration > 0) await thresholdTweener.RunAsync(new FloatTween(bloom.threshold.value, threshold, duration, x => bloom.threshold.value = x), asyncToken, bloom);
             else bloom.threshold.value = threshold;
         }
-
         private async UniTask ChangeSoftKneeAsync(float softKnee, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await softKneeTweener.RunAsync(new FloatTween(bloom.softKnee.value, softKnee, duration, x => bloom.softKnee.value = x), asyncToken, bloom);
@@ -196,75 +157,66 @@ namespace NaninovelPostProcess
             if (duration > 0) await dirtIntensityTweener.RunAsync(new FloatTween(bloom.dirtIntensity.value, dirtIntensity, duration, x => bloom.dirtIntensity.value = x), asyncToken, bloom);
             else bloom.dirtIntensity.value = dirtIntensity;
         }
-
         private void ChangeTexture(string imageId)
         {
             if (imageId == "None" || String.IsNullOrEmpty(imageId)) bloom.dirtTexture.value = null;
-            else
-            {
-                foreach (var img in dirtTextures)
-                {
-                    if (img != null && img.name == imageId)
-                    {
-                        bloom.dirtTexture.value = img;
-                    }
-                }
-            }
+            else dirtTextures.Select(t => t != null && t.name == imageId);
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
         public string SceneAssistantParameters()
         {
-            EditorGUIUtility.labelWidth = 190;
+            Duration = SpawnSceneAssistant.FloatField("Duration", Duration);
+            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+            bloom.intensity.value = SpawnSceneAssistant.FloatField("Intensity", bloom.intensity.value);
+            bloom.threshold.value = SpawnSceneAssistant.FloatField("Threshold", bloom.threshold.value);
+            bloom.softKnee.value = SpawnSceneAssistant.SliderField("Soft Knee", bloom.softKnee.value, 0f, 1f);
+            bloom.clamp.value = SpawnSceneAssistant.FloatField("Clamp", bloom.clamp.value);
+            bloom.diffusion.value = SpawnSceneAssistant.SliderField("Diffusion", bloom.diffusion.value, 1f, 10f);
+            bloom.anamorphicRatio.value = SpawnSceneAssistant.SliderField("Anamorphic Ratio", bloom.anamorphicRatio.value, -1f, 1f);
+            bloom.color.value = SpawnSceneAssistant.ColorField("Color", bloom.color.value);
+            bloom.fastMode.value = SpawnSceneAssistant.BooleanField("Fast Mode", bloom.fastMode.value);
+            bloom.dirtTexture.value = SpawnSceneAssistant.TextureField("Dirt Texture", bloom.dirtTexture.value, dirtTextures) ?? null;
+            bloom.dirtIntensity.value = SpawnSceneAssistant.FloatField("Dirt Intensity", bloom.dirtIntensity.value);
 
-            Duration = FloatField("Duration", Duration);
-            volume.weight = SliderField("Volume Weight", volume.weight, 0f, 1f);
-            bloom.intensity.value = FloatField("Intensity", bloom.intensity.value);
-            bloom.threshold.value = FloatField("Threshold", bloom.threshold.value);
-            bloom.softKnee.value = SliderField("Soft Knee", bloom.softKnee.value, 0f, 1f);
-            bloom.clamp.value = FloatField("Clamp", bloom.clamp.value);
-            bloom.diffusion.value = SliderField("Diffusion", bloom.diffusion.value, 1f, 10f);
-            bloom.anamorphicRatio.value = SliderField("Anamorphic Ratio", bloom.anamorphicRatio.value, -1f, 1f);
-            bloom.color.value = ColorField("Color", bloom.color.value);
-            bloom.fastMode.value = BooleanField("Fast Mode", bloom.fastMode.value);
-            bloom.dirtTexture.value = TextureField("Dirt Texture", bloom.dirtTexture.value, dirtTextures, dirtTextureIds) ?? null;
-            bloom.dirtIntensity.value = EditorGUILayout.FloatField("Dirt Intensity", bloom.dirtIntensity.value);
-
-            return base.GetSpawnString();
+            return SpawnSceneAssistant.GetSpawnString(ParameterList());
         }
 
         public IReadOnlyDictionary<string, string> ParameterList()
         {
+            if (bloom == null) return null;
+
             return new Dictionary<string, string>()
             {
                 { "time", Duration.ToString()},
-                { "weight", volume.weight.ToString()},
+                { "weight", Volume.weight.ToString()},
                 { "intensity", bloom.intensity.value.ToString()},
                 { "threshold", bloom.threshold.value.ToString()},
                 { "softKnee", bloom.softKnee.value.ToString()},
                 { "clamp", bloom.clamp.value.ToString()},
                 { "diffusion", bloom.diffusion.value.ToString()},
-                { "anamorphicRatio", bloom.diffusion.value.ToString()},
+                { "anamorphicRatio", bloom.anamorphicRatio.value.ToString()},
                 { "color", "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value)},
                 { "fastMode", bloom.fastMode.value.ToString().ToLower()},
                 { "dirtTexture", bloom.dirtTexture.value?.name},
                 { "dirtIntensity", bloom.dirtIntensity.value.ToString()}
             };
         }
-#endif
+
+    #endif
     }
 
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
     [CustomEditor(typeof(Bloom))]
-    public class CopyFXBloom : PostProcessObjectEditor
+    public class BloomEditor : PostProcessObjectEditor
     {
-        protected override string label => "bloom";
+        protected override string Label => "bloom";
     }
 
-#endif
+    #endif
 
 }
 

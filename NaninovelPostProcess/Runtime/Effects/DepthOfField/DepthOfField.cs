@@ -2,7 +2,6 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -16,48 +15,32 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class DepthOfField : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class DepthOfField : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
     {
-        protected float Duration { get; private set; }
-        protected float VolumeWeight { get; private set; }
         protected float FocusDistance { get; private set; }
         protected float Aperture { get; private set; }
         protected float FocalLength { get; private set; }
         protected string MaxBlurSize { get; private set; }
-        protected float FadeOutDuration { get; private set; }
 
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> focusDistanceTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> apertureTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> focalLengthTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
-
         [Header("Depth of Field Settings")]
-        [SerializeField] private float defaultFocusDistance = 0.1f;
-        [SerializeField] private float defaultAperture = 1f;
-        [SerializeField] private float defaultFocalLength = 1f;
-        [SerializeField] private string defaultMaxBlurSize = "Medium";
+        [SerializeField, UnityEngine.Min(0.1f)] private float defaultFocusDistance = 0.1f;
+        [SerializeField, Range(0.05f, 32f)] private float defaultAperture = 1f;
+        [SerializeField, Range(1f, 300f)] private float defaultFocalLength = 1f;
+        [SerializeField] private KernelSize defaultMaxBlurSize = KernelSize.Medium;
 
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
-
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.DepthOfField dof;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
-
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
+            base.SetSpawnParameters(parameters, asap);
             FocusDistance = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultFocusDistance;
             Aperture = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultAperture;
             FocalLength = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultFocalLength;
-            MaxBlurSize = parameters?.ElementAtOrDefault(5)?.ToString() ?? defaultMaxBlurSize;
+            MaxBlurSize = parameters?.ElementAtOrDefault(5)?.ToString() ?? defaultMaxBlurSize.ToString();
         }
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
@@ -70,7 +53,7 @@ namespace NaninovelPostProcess {
         public async UniTask ChangeDoFAsync(float duration, float volumeWeight, float focusDistance, float focalLength, float aperture, string blursize, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             if (dof.focusDistance.value != focusDistance) tasks.Add(ChangeFocusDistanceAsync(focusDistance, duration, asyncToken));
             if (dof.aperture.value != aperture) tasks.Add(ChangeApertureAsync(aperture, duration, asyncToken));
             if (dof.focalLength.value != focalLength) tasks.Add(ChangeFocalLengthAsync(focalLength, duration, asyncToken));
@@ -79,127 +62,76 @@ namespace NaninovelPostProcess {
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
-        {
-            CompleteTweens();
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void CompleteTweens()
+        protected override void CompleteTweens()
         {
             if (focusDistanceTweener.Running) focusDistanceTweener.CompleteInstantly();
             if (apertureTweener.Running) apertureTweener.CompleteInstantly();
             if (focalLengthTweener.Running) focalLengthTweener.CompleteInstantly();
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
-
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            dof = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.DepthOfField>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.DepthOfField>();
+            base.Awake();
+            dof = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.DepthOfField>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.DepthOfField>();
             dof.SetAllOverridesTo(true);
-            volume.weight = 0f;
-        }
-
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
         }
 
         private async UniTask ChangeFocusDistanceAsync(float focusDistance, float duration, AsyncToken asyncToken = default)
         {
-
             if (duration > 0) await focusDistanceTweener.RunAsync(new FloatTween(dof.focusDistance.value, focusDistance, duration, x => dof.focusDistance.value = x), asyncToken, dof);
             else dof.focusDistance.value = focusDistance;
         }
         private async UniTask ChangeApertureAsync(float aperture, float duration, AsyncToken asyncToken = default)
         {
-
             if (duration > 0) await apertureTweener.RunAsync(new FloatTween(dof.aperture.value, aperture, duration, x => dof.aperture.value = x), asyncToken, dof);
             else dof.aperture.value = aperture;
         }
-
         private async UniTask ChangeFocalLengthAsync(float focalLength, float duration, AsyncToken asyncToken = default)
         {
-
             if (duration > 0) await focalLengthTweener.RunAsync(new FloatTween(dof.focalLength.value, focalLength, duration, x => dof.focalLength.value = x), asyncToken, dof);
             else dof.focalLength.value = focalLength;
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
-        public string SceneAssistantParameters()
-        {
-            EditorGUIUtility.labelWidth = 190;
-
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-
-            GUILayout.BeginHorizontal();
-            dof.focusDistance.value = EditorGUILayout.FloatField("Focus Distance", dof.focusDistance.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Aperture", GUILayout.Width(190));
-            dof.aperture.value = EditorGUILayout.Slider(dof.aperture.value, 0.1f, 32f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Focal Length", GUILayout.Width(190));
-            dof.focalLength.value = EditorGUILayout.Slider(dof.focalLength.value, 1, 300, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Max Blur Size", GUILayout.Width(190));
-            string[] kernelSizeArray = new string[] { "Small", "Medium", "Large", "VeryLarge" };
-            var sizeIndex = Array.IndexOf(kernelSizeArray, dof.kernelSize.value.ToString());
-            sizeIndex = EditorGUILayout.Popup(sizeIndex, kernelSizeArray, GUILayout.Height(20), GUILayout.Width(220));
-            dof.kernelSize.value = (KernelSize)sizeIndex;
-            GUILayout.EndHorizontal();
-
-            return base.GetSpawnString();
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            return new Dictionary<string, string>()
+            public string SceneAssistantParameters()
             {
-                { "time", Duration.ToString()},
-                { "weight", volume.weight.ToString()},
-                { "intensity", dof.focusDistance.value.ToString()},
-                { "aperture", dof.aperture.value.ToString()},
-                { "focalLength", dof.focalLength.value.ToString()},
-                { "maxBlurSize", dof.kernelSize.value.ToString()},
-            };
-        }
+                Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
+                Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+                dof.focusDistance.value = SpawnSceneAssistant.FloatField("Focus Distance", dof.focusDistance.value);
+                dof.aperture.value = SpawnSceneAssistant.SliderField("Aperture", dof.aperture.value, 0.1f, 32f);
+                dof.focalLength.value = SpawnSceneAssistant.SliderField("Focal Length", dof.focalLength.value, 1, 300);
+                dof.kernelSize.value = SpawnSceneAssistant.EnumField("Max Blur Size", dof.kernelSize.value);
 
-#endif
+                return SpawnSceneAssistant.GetSpawnString(ParameterList());
+            }
+
+            public IReadOnlyDictionary<string, string> ParameterList()
+            {
+                if (dof == null) return null;
+
+                return new Dictionary<string, string>()
+                {
+                    { "time", Duration.ToString()},
+                    { "weight", Volume.weight.ToString()},
+                    { "intensity", dof.focusDistance.value.ToString()},
+                    { "aperture", dof.aperture.value.ToString()},
+                    { "focalLength", dof.focalLength.value.ToString()},
+                    { "maxBlurSize", dof.kernelSize.value.ToString()},
+                };
+            }
+    #endif
     }
 
-
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
     [CustomEditor(typeof(DepthOfField))]
-    public class CopyFXDoF : PostProcessObjectEditor
+    public class DepthOfFieldEditor : PostProcessObjectEditor
     {
-        protected override string label => "doF";
+        protected override string Label => "doF";
     }
 
-#endif
+    #endif
 
 }
 

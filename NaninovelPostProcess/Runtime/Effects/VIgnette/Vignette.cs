@@ -16,10 +16,8 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Vignette : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class Vignette : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ITextureParameterized, ISceneAssistant
     {
-        protected float Duration { get; private set; }
-        protected float VolumeWeight { get; private set; }
         protected string Mode { get; private set; }
         protected Color Color { get; private set; }
 
@@ -33,9 +31,7 @@ namespace NaninovelPostProcess {
         //Mask parameters
         protected string Mask { get; private set; }
         protected float Opacity { get; private set; }
-        protected float FadeOutDuration { get; private set; }
 
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<ColorTween> colorTweener = new Tweener<ColorTween>();
         private readonly Tweener<VectorTween> centerTweener = new Tweener<VectorTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
@@ -43,41 +39,30 @@ namespace NaninovelPostProcess {
         private readonly Tweener<FloatTween> roundnessTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> opacityTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
-
         [Header("Vignette Settings")]
-        [SerializeField] private string defaultMode = "Masked";
+        [SerializeField] private VignetteMode defaultMode = VignetteMode.Classic;
         [SerializeField] private Color defaultColor = Color.black;
 
         //Classic parameters
         [SerializeField] private Vector2 defaultCenter = new Vector2(0.5f,0.5f);
-        [SerializeField] private float defaultIntensity = 0f;
-        [SerializeField] private float defaultSmoothness = 0.2f;
-        [SerializeField] private float defaultRoundness = 1f;
+        [SerializeField, Range(0f, 1f)] private float defaultIntensity = 0f;
+        [SerializeField, Range(0.01f, 1f)] private float defaultSmoothness = 0.2f;
+        [SerializeField, Range(0f, 1f)] private float defaultRoundness = 1f;
         [SerializeField] private bool defaultRounded = false;
 
         //Masked parameters
         [SerializeField] private string defaultMask = string.Empty;
         [SerializeField] private List<Texture> maskTextures = new List<Texture>();
-        [SerializeField] private float defaultOpacity = 1f;
+        [SerializeField, Range(0f, 1f)] private float defaultOpacity = 1f;
 
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
-
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.Vignette vignette;
 
-        private List<string> maskTextureIds = new List<string>();
+        public List<Texture> TextureItems() => maskTextures;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
-
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            Mode = parameters?.ElementAtOrDefault(2)?.ToString() ?? defaultMode;
+            base.SetSpawnParameters(parameters, asap);
+            Mode = parameters?.ElementAtOrDefault(2)?.ToString() ?? defaultMode.ToString();
             Color = ColorUtility.TryParseHtmlString(parameters?.ElementAtOrDefault(3), out var color) ? color: defaultColor;
 
             //Classic parameters
@@ -103,7 +88,7 @@ namespace NaninovelPostProcess {
         public async UniTask ChangeVignetteClassicAsync(float duration, float volumeWeight, string mode, Color color, Vector2 center, float intensity, float smoothness, float roundness, bool rounded, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             vignette.mode.value = (VignetteMode)System.Enum.Parse(typeof(VignetteMode), mode);
             if (vignette.color.value != color) tasks.Add(ChangeColorAsync(color, duration, asyncToken));
             if (vignette.center.value != center) tasks.Add(ChangeCenterAsync(center, duration, asyncToken));
@@ -118,7 +103,7 @@ namespace NaninovelPostProcess {
         public async UniTask ChangeVignetteMaskedAsync(float duration, float volumeWeight, string mode, Color color, string mask, float opacity, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             vignette.mode.value = (VignetteMode)System.Enum.Parse(typeof(VignetteMode), mode);
             if (vignette.color.value != color) tasks.Add(ChangeColorAsync(color, duration, asyncToken));
             if (vignette.mask.value != null && vignette.mask.value.name != mask) ChangeTexture(mask);
@@ -127,19 +112,7 @@ namespace NaninovelPostProcess {
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
-        {
-            CompleteTweens();
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void CompleteTweens()
+        protected override void CompleteTweens()
         {
             if (colorTweener.Running) colorTweener.CompleteInstantly();
             if (centerTweener.Running) centerTweener.CompleteInstantly();
@@ -149,26 +122,14 @@ namespace NaninovelPostProcess {
             if (opacityTweener.Running) opacityTweener.CompleteInstantly();
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
-
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            vignette = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Vignette>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.Vignette>();
+            base.Awake();
+            vignette = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.Vignette>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.Vignette>();
             vignette.SetAllOverridesTo(true);
-            volume.weight = 0f;
-
-            maskTextureIds = maskTextures.Select(s => s.name).ToList();
-            maskTextureIds.Insert(0, "None");
         }
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
-        }
-
         private async UniTask ChangeColorAsync(Color color, float duration, AsyncToken asyncToken = default)
         {
-
             if (duration > 0) await colorTweener.RunAsync(new ColorTween(vignette.color.value, color, ColorTweenMode.All, duration, x => vignette.color.value = x), asyncToken, vignette);
             else vignette.color.value = color;
         }
@@ -178,10 +139,8 @@ namespace NaninovelPostProcess {
             if (duration > 0) await centerTweener.RunAsync(new VectorTween(vignette.center.value, center, duration, x => vignette.center.value = x), asyncToken, vignette);
             else vignette.center.value = center;
         }
-
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
-
             if (duration > 0) await intensityTweener.RunAsync(new FloatTween(vignette.intensity.value, intensity, duration, x => vignette.intensity.value = x), asyncToken, vignette);
             else vignette.intensity.value = intensity;
         }
@@ -195,140 +154,75 @@ namespace NaninovelPostProcess {
             if (duration > 0) await roundnessTweener.RunAsync(new FloatTween(vignette.roundness.value, roundness, duration, x => vignette.roundness.value = x), asyncToken, vignette);
             else vignette.roundness.value = roundness;
         }
-
         private async UniTask ChangeOpacityAsync(float opacity, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await opacityTweener.RunAsync(new FloatTween(vignette.opacity.value, opacity, duration, x => vignette.opacity.value = x), asyncToken, vignette);
             else vignette.opacity.value = opacity;
         }
-
         private void ChangeTexture(string imageId)
         {
             if (imageId == "None" || String.IsNullOrEmpty(imageId)) vignette.mask.value = null;
-            else
-            {
-                foreach (var img in maskTextures)
-                {
-                    if (img != null && img.name == imageId)
-                    {
-                        vignette.mask.value = img;
-                    }
-                }
-            }
+            else maskTextures.Select(t => t != null && t.name == imageId);
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
         public string SceneAssistantParameters()
         {
-            EditorGUIUtility.labelWidth = 190;
+            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
+            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+            vignette.mode.value = SpawnSceneAssistant.EnumField("Mode", vignette.mode.value);
+            vignette.color.value = SpawnSceneAssistant.ColorField("Color", vignette.color.value);
 
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Mode", GUILayout.Width(190));
-            string[] kernelSizeArray = new string[] { "Classic", "Masked" };
-            var sizeIndex = Array.IndexOf(kernelSizeArray, vignette.mode.value.ToString());
-            sizeIndex = EditorGUILayout.Popup(sizeIndex, kernelSizeArray, GUILayout.Width(220));
-            vignette.mode.value = (VignetteMode)sizeIndex;
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Color", GUILayout.Width(190));
-            vignette.color.value = EditorGUILayout.ColorField(vignette.color.value, GUILayout.Height(20), GUILayout.Width(180));
-            GUILayout.EndHorizontal();
-
-
-            if(vignette.mode.value.ToString() == "Classic") { 
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Center", GUILayout.Width(190));
-                vignette.center.value = EditorGUILayout.Vector2Field("",vignette.center.value, GUILayout.Height(20), GUILayout.Width(180));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Intensity", GUILayout.Width(190));
-                vignette.intensity.value = EditorGUILayout.Slider(vignette.intensity.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Smoothnes", GUILayout.Width(190));
-                vignette.smoothness.value = EditorGUILayout.Slider(vignette.smoothness.value, 0.01f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Roundness", GUILayout.Width(190));
-                vignette.roundness.value = EditorGUILayout.Slider(vignette.roundness.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Rounded", GUILayout.Width(190));
-                string[] options = new string[] { "True", "False" };
-                var roundedIndex = Array.IndexOf(options, vignette.rounded.value.ToString());
-                roundedIndex = EditorGUILayout.Popup(roundedIndex, options, GUILayout.Height(20), GUILayout.Width(220));
-                vignette.rounded.value = bool.Parse(options[roundedIndex]);
-                GUILayout.EndHorizontal();
-
-            }
-            else
+            if (vignette.mode.value == VignetteMode.Classic)
             {
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Mask", GUILayout.Width(190));
-                string[] maskTexturesArray = maskTextureIds.ToArray();
-                var maskIndex = Array.IndexOf(maskTexturesArray, vignette.mask.value?.name ?? "None");
-                maskIndex = EditorGUILayout.Popup(maskIndex, maskTexturesArray, GUILayout.Height(20), GUILayout.Width(220));
-                vignette.mask.value = maskTextures.FirstOrDefault(s => s.name == maskTextureIds[maskIndex]) ?? null;
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Opacity", GUILayout.Width(190));
-                vignette.opacity.value = EditorGUILayout.Slider(vignette.opacity.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
+                vignette.center.value = SpawnSceneAssistant.Vector2Field("Center", vignette.center.value);
+                vignette.intensity.value = SpawnSceneAssistant.SliderField("Intensity", vignette.intensity.value, 0f, 1f);
+                vignette.smoothness.value = SpawnSceneAssistant.SliderField("Smoothness", vignette.smoothness.value, 0.01f, 1f);
+                vignette.roundness.value = SpawnSceneAssistant.SliderField("Roundness", vignette.roundness.value, 0f, 1f);
+                vignette.rounded.value = SpawnSceneAssistant.BooleanField("Rounded", vignette.rounded.value);
+            }
+            else if (vignette.mode.value == VignetteMode.Masked)
+            {
+                vignette.mask.value = SpawnSceneAssistant.TextureField("Mask", vignette.mask.value, this is PostProcessObject.ITextureParameterized textureParameterized ? textureParameterized.TextureItems() : null);
+                vignette.opacity.value = EditorGUILayout.Slider("Dirt Mask Opacity", vignette.opacity.value, 0f, 1f, GUILayout.Width(220));
             }
 
-            return base.GetSpawnString();
-
+            return SpawnSceneAssistant.GetSpawnString(ParameterList());
         }
 
         public IReadOnlyDictionary<string, string> ParameterList()
         {
+            if (vignette == null) return null;
+
             return new Dictionary<string, string>()
             {
                 { "time", Duration.ToString()},
-                { "weight", volume.weight.ToString()},
-                { "classicOrMask", vignette.mode.value.ToString()},
+                { "weight", Volume.weight.ToString()},
+                { "classicOrMasked", vignette.mode.value.ToString()},
                 { "color",  "#" + ColorUtility.ToHtmlStringRGBA(vignette.color.value)},
-                { "center", vignette.center.value.ToString()},
+                { "center", vignette.center.value.ToString().Remove("(").Remove(")")},
                 { "intensity", vignette.intensity.value.ToString()},
                 { "smoothness", vignette.smoothness.value.ToString()},
                 { "roundness", vignette.roundness.value.ToString()},
-                { "rounded", vignette.roundness.value.ToString().ToLower()},
-                { "maskTexture", vignette.roundness.value.ToString().ToLower()},
-                { "maskOpacity", vignette.roundness.value.ToString().ToLower()}
-
+                { "rounded", vignette.rounded.value.ToString().ToLower()},
+                { "maskTexture", vignette.mask.value?.ToString()},
+                { "maskOpacity", vignette.opacity.value.ToString()}
             };
         }
+    #endif
 
-#endif
     }
 
-
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
     [CustomEditor(typeof(Vignette))]
-    public class CopyFXVignette : PostProcessObjectEditor
+    public class VignetteEditor : PostProcessObjectEditor
     {
-        protected override string label => "vignette";
+        protected override string Label => "vignette";
     }
 
-#endif
+    #endif
 
 }
 

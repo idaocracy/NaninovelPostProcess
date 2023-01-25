@@ -1,159 +1,102 @@
 ﻿#if UNITY_POST_PROCESSING_STACK_V2
-using UnityEngine;
+
 using Naninovel;
-using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
-using Naninovel.Commands;
-using System.Runtime.CompilerServices;
 using UnityEngine.Rendering.PostProcessing;
-using System;
+using UnityEngine;
+using UnityEditor;
 
-namespace NaninovelPostProcess
-{
-    public class PostProcessObject : MonoBehaviour
+namespace NaninovelPostProcess { 
+
+    public abstract class PostProcessObject : SpawnObject
     {
-        private PostProcessingConfiguration postProcessingConfiguration;
-
-        public interface ISceneAssistant
+        public interface ITextureParameterized
         {
-            IReadOnlyDictionary<string, string> ParameterList();
+            List<Texture> TextureItems();
         }
 
-    private void Awake()
+        public float Duration { get; protected set; }
+        protected float VolumeWeight { get; private set; }
+        protected float FadeOutDuration { get; private set; }
+
+        protected readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
+
+        private PostProcessingConfiguration postProcessingConfiguration;
+        protected PostProcessVolume Volume;
+
+        [Header("Spawn/Despawn settings")]
+        [SerializeField, UnityEngine.Min(0f)] private float defaultSpawnDuration = 0.35f;
+        [SerializeField, Range(0f, 1f)] private float defaultDespawnDuration = 0.35f;
+        [Header("Volume Settings")]
+        [SerializeField, Range(0f, 1f)] private float defaultVolumeWeight = 1f;
+
+        public static string[] textureIds;
+
+        protected virtual void Awake()
         {
+
             postProcessingConfiguration = Engine.GetConfiguration<PostProcessingConfiguration>();
             if (postProcessingConfiguration.OverrideObjectsLayer) gameObject.layer = postProcessingConfiguration.PostProcessingLayer;
+
+            Volume = GetComponent<PostProcessVolume>();
+            Volume.weight = 0f;
+
+            if (this is ITextureParameterized textureParameterized)
+            {
+                string[] nullArray = new string[] { "None" };
+                string[] texturesArray = textureParameterized.TextureItems().Select(s => s.name).ToArray();
+                textureIds = nullArray.Concat(texturesArray).ToArray();
+            }
         }
 
-        public string GetCommandString() => (this is ISceneAssistant sceneAssistant) ?  
-            string.Join(" ", sceneAssistant.ParameterList().Where(x => x.Value != null).Select(x => x.Key + ":" + x.Value)) : null;
-        
-        public string GetSpawnString() => (this is ISceneAssistant sceneAssistant) ? 
-            string.Join(",", sceneAssistant.ParameterList().Select(x => x.Value)) : null;
-
-        protected virtual float FloatField(string label, float value)
+        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            GUILayout.BeginHorizontal();
-            value = EditorGUILayout.FloatField(label, value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-            return value;
+            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultSpawnDuration);
+            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
         }
 
-        protected virtual float SliderField(string label, float value, float minValue, float maxValue)
+        protected async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(label, GUILayout.Width(190));
-            value = EditorGUILayout.Slider(value, minValue, maxValue, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-            return value;
+            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x), asyncToken, Volume);
+            else Volume.weight = volumeWeight;
         }
 
-        protected virtual Color ColorField(string label, Color value)
+        public void SetDestroyParameters(IReadOnlyList<string> parameters)
         {
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Color", GUILayout.Width(190));
-            value = EditorGUILayout.ColorField(value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-            return value;
+            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDespawnDuration;
         }
 
-        protected virtual bool BooleanField(string label, bool value)
+        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
         {
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField(label, GUILayout.Width(190));
-            value = EditorGUILayout.Toggle(value);
-            GUILayout.EndHorizontal();
-            return value;
+            CompleteTweens();
+            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
+            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
         }
 
-        protected virtual Texture TextureField(string label, Texture value, List<Texture> textures, List<string> textureIds)
-        {
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Dirt Texture", GUILayout.Width(190));
-            string[] texturesArray = textureIds.ToArray();
-            var textureIndex = Array.IndexOf(texturesArray, value?.name ?? "None");
-            textureIndex = EditorGUILayout.Popup(textureIndex, texturesArray, GUILayout.Height(20), GUILayout.Width(220));
-            value = textures.FirstOrDefault(s => s.name == textureIds[textureIndex]) ?? null;
-            GUILayout.EndHorizontal();
-            return value;
-            
-        }
+        protected abstract void CompleteTweens();
     }
 
 
-#if UNITY_EDITOR
-    public class PostProcessObjectEditor : Editor
-    {
-        private PostProcessObject targetObject;
-        protected virtual string label => null;
-        public bool LogResult;
-        private bool showDefaultValues;
 
-        private void Awake()
+    #if UNITY_EDITOR
+
+        [CustomEditor(typeof(PostProcessObject))]
+        public class PostProcessObjectEditor : SpawnObjectEditor
         {
-            targetObject = (PostProcessObject)target;
+            protected PostProcessVolume Volume;
+            protected float Duration;
+
+            protected override void Awake()
+            {
+                base.Awake();
+                Volume = spawnObject.GetComponent<PostProcessVolume>();
+            }
+
+
         }
 
-        public override void OnInspectorGUI()
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(30f);
-            GUILayout.Label("@" + label, EditorStyles.largeLabel);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("@spawn", EditorStyles.largeLabel);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(20f);
-            if (GUILayout.Button("@", GUILayout.Height(50), GUILayout.Width(50)))
-            {
-                GUIUtility.systemCopyBuffer = "@" + label + " " + targetObject.GetCommandString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(5f);
-            if (GUILayout.Button("[]", GUILayout.Height(50), GUILayout.Width(50)))
-            {
-                GUIUtility.systemCopyBuffer = "["+ label + " " + targetObject.GetCommandString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("@", GUILayout.Height(50), GUILayout.Width(50)))
-            {
-                GUIUtility.systemCopyBuffer = "@spawn " + targetObject.GetType().Name + " params:" + targetObject.GetSpawnString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(5f);
-            if (GUILayout.Button("[]", GUILayout.Height(50), GUILayout.Width(50)))
-            {
-                GUIUtility.systemCopyBuffer = "[spawn " + targetObject.GetType().Name + " params:" + targetObject.GetSpawnString() + "]";
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.Space(5f);
-            if (GUILayout.Button("params", GUILayout.Height(50), GUILayout.Width(50)))
-            {
-                GUIUtility.systemCopyBuffer = targetObject.GetSpawnString();
-                if (LogResult) Debug.Log(GUIUtility.systemCopyBuffer);
-            }
-
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(5f);
-            if (GUILayout.Toggle(LogResult, "Log Results")) LogResult = true;
-            else LogResult = false;
-            GUILayout.Space(5f);
-
-            showDefaultValues = EditorGUILayout.Foldout(showDefaultValues, "Default values");
-            if (showDefaultValues) base.DrawDefaultInspector();
-        }
     #endif
 }
-#endif
 
-}
+#endif

@@ -15,10 +15,8 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class LensDistortion : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class LensDistortion : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
     {
-        protected float Duration { get; private set; }
-        protected float VolumeWeight { get; private set; }
         protected float Intensity { get; private set; }
         protected float XMultiplier { get; private set; }
         protected float YMultiplier { get; private set; }
@@ -26,9 +24,6 @@ namespace NaninovelPostProcess {
         protected float CenterY { get; private set; }
         protected float Scale { get; private set; }
 
-        protected float FadeOutDuration { get; private set; }
-
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> xMultiplierTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> yMultiplierTweener = new Tweener<FloatTween>();
@@ -36,29 +31,19 @@ namespace NaninovelPostProcess {
         private readonly Tweener<FloatTween> centerYTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> scaleTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
         [Header("Lens Distortion Settings")]
-        [SerializeField] private float defaultIntensity = 0f;
-        [SerializeField] private float defaultXMultiplier = 1f;
-        [SerializeField] private float defaultYMultiplier = 1f;
-        [SerializeField] private float defaultCenterX = 0f;
-        [SerializeField] private float defaultCenterY = 0f;
-        [SerializeField] private float defaultScale = 1f;
+        [SerializeField, Range(-100f, 100f)] private float defaultIntensity = 0f;
+        [SerializeField, Range(0f, 1f)] private float defaultXMultiplier = 1f;
+        [SerializeField, Range(0f, 1f)] private float defaultYMultiplier = 1f;
+        [SerializeField, Range(-1f, 1f)] private float defaultCenterX = 0f;
+        [SerializeField, Range(-1f, 1f)] private float defaultCenterY = 0f;
+        [SerializeField, Range(0.01f, 5f)] private float defaultScale = 1f;
 
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
-
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.LensDistortion lensDistortion;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
-
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
+            base.SetSpawnParameters(parameters, asap);
             Intensity = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultIntensity;
             XMultiplier = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultYMultiplier;
             YMultiplier = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultXMultiplier;
@@ -69,15 +54,7 @@ namespace NaninovelPostProcess {
 
         public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
         {
-            if (intensityTweener.Running) intensityTweener.CompleteInstantly();
-            if (xMultiplierTweener.Running) xMultiplierTweener.CompleteInstantly();
-            if (yMultiplierTweener.Running) yMultiplierTweener.CompleteInstantly();
-            if (centerXTweener.Running) centerXTweener.CompleteInstantly();
-            if (centerYTweener.Running) centerYTweener.CompleteInstantly();
-            if (scaleTweener.Running) scaleTweener.CompleteInstantly();
-
-            if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
+            CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
             await ChangeLensDistortionAsync(duration, VolumeWeight, Intensity, XMultiplier, YMultiplier, CenterX, CenterY, Scale, asyncToken);
         }
@@ -85,7 +62,7 @@ namespace NaninovelPostProcess {
         public async UniTask ChangeLensDistortionAsync(float duration, float volumeWeight, float intensity, float xMultiplier, float yMultiplier, float centerX, float centerY, float scale, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             if (lensDistortion.intensity.value != intensity) tasks.Add(ChangeIntensityAsync(intensity, duration, asyncToken));
             if (lensDistortion.intensityX.value != xMultiplier) tasks.Add(ChangeXMultiplierAsync(xMultiplier, duration, asyncToken));
             if (lensDistortion.intensityY.value != yMultiplier) tasks.Add(ChangeYMultiplierAsync(yMultiplier, duration, asyncToken));
@@ -96,12 +73,7 @@ namespace NaninovelPostProcess {
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
+        protected override void CompleteTweens()
         {
             if (intensityTweener.Running) intensityTweener.CompleteInstantly();
             if (xMultiplierTweener.Running) xMultiplierTweener.CompleteInstantly();
@@ -110,29 +82,18 @@ namespace NaninovelPostProcess {
             if (centerYTweener.Running) centerYTweener.CompleteInstantly();
             if (scaleTweener.Running) scaleTweener.CompleteInstantly();
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
-
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
         }
 
         private void OnDestroy()
         {
-            volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.LensDistortion>();
+            Volume.profile.RemoveSettings<UnityEngine.Rendering.PostProcessing.LensDistortion>();
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            lensDistortion = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.LensDistortion>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.LensDistortion>();
+            base.Awake();
+            lensDistortion = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.LensDistortion>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.LensDistortion>();
             lensDistortion.SetAllOverridesTo(true);
-            volume.weight = 0f;
-        }
-
-
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
         }
 
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
@@ -150,7 +111,6 @@ namespace NaninovelPostProcess {
             if (duration > 0) await yMultiplierTweener.RunAsync(new FloatTween(lensDistortion.intensityY.value, yMultiplier, duration, x => lensDistortion.intensityY.value = x), asyncToken, lensDistortion);
             else lensDistortion.intensityY.value = yMultiplier;
         }    
-    
         private async UniTask ChangeCenterXAsync(float centerX, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await centerXTweener.RunAsync(new FloatTween(lensDistortion.centerX.value, centerX, duration, x => lensDistortion.centerX.value = x), asyncToken, lensDistortion);
@@ -166,60 +126,30 @@ namespace NaninovelPostProcess {
             if (duration > 0) await scaleTweener.RunAsync(new FloatTween(lensDistortion.scale.value, scale, duration, x => lensDistortion.scale.value = x), asyncToken, lensDistortion);
             else lensDistortion.scale.value = scale;
         }
-
-#if UNITY_EDITOR
-
+        
+    #if UNITY_EDITOR
         public string SceneAssistantParameters()
         {
-            EditorGUIUtility.labelWidth = 190;
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
+            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+            lensDistortion.intensity.value = SpawnSceneAssistant.SliderField("Intensity", lensDistortion.intensity.value, -100f, 100f);
+            lensDistortion.intensityX.value = SpawnSceneAssistant.SliderField("X Multiplier", lensDistortion.intensityX.value, 0, 1f);
+            lensDistortion.intensityY.value = SpawnSceneAssistant.SliderField("Y Multiplier", lensDistortion.intensityY.value, 0, 1f);
+            lensDistortion.centerX.value = SpawnSceneAssistant.SliderField("Center X", lensDistortion.centerX.value, -1f, 1f);
+            lensDistortion.centerY.value = SpawnSceneAssistant.SliderField("Center Y", lensDistortion.centerY.value, 1f, 1f);
+            lensDistortion.scale.value = SpawnSceneAssistant.SliderField("Scale", lensDistortion.scale.value, 0.01f, 5f);
 
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Intensity", GUILayout.Width(190));
-            lensDistortion.intensity.value = EditorGUILayout.Slider(lensDistortion.intensity.value, -100f, 100f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("X Multiplier", GUILayout.Width(190));
-            lensDistortion.intensityX.value = EditorGUILayout.Slider(lensDistortion.intensityX.value, 0, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Y Multiplier", GUILayout.Width(190));
-            lensDistortion.intensityY.value = EditorGUILayout.Slider(lensDistortion.intensityY.value, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Center X", GUILayout.Width(190));
-            lensDistortion.centerX.value = EditorGUILayout.Slider(lensDistortion.centerX.value, -1f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Center Y", GUILayout.Width(190));
-            lensDistortion.centerY.value = EditorGUILayout.Slider(lensDistortion.centerY.value, -1f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Scale", GUILayout.Width(190));
-            lensDistortion.scale.value = EditorGUILayout.Slider(lensDistortion.scale.value, 0.01f, 5f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            return base.GetSpawnString();
+            return SpawnSceneAssistant.GetSpawnString(ParameterList());
         }
 
         public IReadOnlyDictionary<string, string> ParameterList()
         {
+            if (lensDistortion == null) return null;
+
             return new Dictionary<string, string>()
             {
                 { "time", Duration.ToString()},
-                { "weight", volume.weight.ToString()},
+                { "weight", Volume.weight.ToString()},
                 { "intensity", lensDistortion.intensity.value.ToString()},
                 { "xMultiplier", lensDistortion.intensityX.value.ToString()},
                 { "yMultiplier", lensDistortion.intensityY.value.ToString()},
@@ -228,17 +158,17 @@ namespace NaninovelPostProcess {
                 { "scale", lensDistortion.scale.value.ToString()},
             };
         }
-
-#endif
+    #endif
     }
 
 
 #if UNITY_EDITOR
 
     [CustomEditor(typeof(LensDistortion))]
-    public class CopyFXLensDistortion : PostProcessObjectEditor
+    public class LensDistortionEditor : PostProcessObjectEditor
     {
-        protected override string label => "lensDistortion";
+        protected override string Label => "lensDistortion";
+
     }
 
 #endif

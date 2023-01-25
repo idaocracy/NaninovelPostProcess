@@ -17,6 +17,7 @@ namespace Naninovel.PostProcess
         public StringParameter ColorFilter;
         public DecimalParameter HueShift;
         public DecimalParameter Saturation;
+        public DecimalParameter Brightness;
         public DecimalParameter Contrast;
 
         public DecimalListParameter RedChannel;
@@ -40,6 +41,7 @@ namespace Naninovel.PostProcess
             ToSpawnParam(ColorFilter),
             ToSpawnParam(HueShift),
             ToSpawnParam(Saturation),
+            ToSpawnParam(Brightness),
             ToSpawnParam(Contrast),
             ToSpawnParam(RedChannel[0]),
             ToSpawnParam(RedChannel[1]),

@@ -2,14 +2,13 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using Codice.CM.Client.Differences.Graphic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -17,9 +16,9 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingHDR : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class ColorGradingHDR : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
     {
-        protected string TonemapperMode { get; private set; }
+        protected Tonemapper TonemapperMode { get; private set; }
         protected float ToeStrength { get; private set; }
         protected float ToeLength { get; private set; }
         protected float ShoulderStrength { get; private set; }
@@ -39,11 +38,7 @@ namespace NaninovelPostProcess {
         protected Vector4 Lift { get; private set; }
         protected Vector4 Gamma { get; private set; }
         protected Vector4 Gain { get; private set; }
-        protected float VolumeWeight { get; private set; }
-        protected float Duration { get; private set; }
-        protected float FadeOutDuration { get; private set; }
 
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> temperatureTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> tintTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> postExposureTweener = new Tweener<FloatTween>();
@@ -64,28 +59,23 @@ namespace NaninovelPostProcess {
         private readonly Tweener<FloatTween> shoulderAngleTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> toneGammaTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
         [Header("Color Grading Settings")]
-        [SerializeField] private string defaultTonemapperMode = "None";
+        [SerializeField] private Tonemapper defaultTonemapperMode = Tonemapper.None;
 
-        [SerializeField] private float defaultToeStrength = 0f;
-        [SerializeField] private float defaultToeLength = 0.5f;
-        [SerializeField] private float defaultShoulderStrength = 0f;
-        [SerializeField] private float defaultShoulderLength = 0.5f;
-        [SerializeField] private float defaultShoulderAngle = 0f;
-        [SerializeField] private float defaultToneGamma = 1f;
+        [SerializeField, Range(0f, 1f)] private float defaultToeStrength = 0f;
+        [SerializeField, Range(0f, 1f)] private float defaultToeLength = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float defaultShoulderStrength = 0f;
+        [SerializeField, UnityEngine.Min(0f)] private float defaultShoulderLength = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float defaultShoulderAngle = 0f;
+        [SerializeField, UnityEngine.Min(0.001f)] private float defaultToneGamma = 1f;
 
-        [SerializeField] private float defaultTemperature = 0f;
-        [SerializeField] private float defaultTint = 0f;
+        [SerializeField, Range(-100f, 100f)] private float defaultTemperature = 0f;
+        [SerializeField, Range(-100f, 100f)] private float defaultTint = 0f;
         [SerializeField] private float defaultPostExposure = 0f;
-        [ColorUsage(false, true)]
-        [SerializeField] private Color defaultColorFilter = Color.white;
-        [SerializeField] private float defaultHueShift = 0f;
-        [SerializeField] private float defaultSaturation = 0f;
-        [SerializeField] private float defaultContrast = 0f;
+        [SerializeField, ColorUsage(false, true)] private Color defaultColorFilter = Color.white;
+        [SerializeField, Range(-180f, 180f)] private float defaultHueShift = 0f;
+        [SerializeField, Range(-100f, 100f)] private float defaultSaturation = 0f;
+        [SerializeField, Range(-100f, 100f)] private float defaultContrast = 0f;
         [SerializeField] private Vector3 defaultRedChannel = new Vector3(100, 0, 0);
         [SerializeField] private Vector3 defaultGreenChannel = new Vector3(0, 100, 0);
         [SerializeField] private Vector3 defaultBlueChannel = new Vector3(0, 0, 100);
@@ -93,19 +83,14 @@ namespace NaninovelPostProcess {
         [SerializeField] private Vector4 defaultGamma = new Vector4(1f, 1f, 1f, 0f);
         [SerializeField] private Vector4 defaultGain = new Vector4(1f, 1f, 1f, 0f);
 
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
-
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
-            TonemapperMode = parameters?.ElementAtOrDefault(2) ?? defaultTonemapperMode;
+            base.SetSpawnParameters(parameters, asap);  
+            TonemapperMode = (Tonemapper)System.Enum.Parse(typeof(Tonemapper), parameters?.ElementAtOrDefault(2).ToString() ?? defaultTonemapperMode.ToString());
 
-            if (TonemapperMode == "Custom")
+            if (TonemapperMode == Tonemapper.Custom)
             {
                 ToeStrength = parameters?.ElementAtOrDefault(3)?.AsInvariantFloat() ?? defaultToeStrength;
                 ToeLength = parameters?.ElementAtOrDefault(4)?.AsInvariantFloat() ?? defaultToeLength;
@@ -192,10 +177,13 @@ namespace NaninovelPostProcess {
         {
             CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
-            await ChangeColorGradingAsync(duration, VolumeWeight, TonemapperMode, ToeStrength, ToeLength, ShoulderStrength, ShoulderLength, ShoulderAngle, ToneGamma, Temperature, Tint, PostExposure, ColorFilter, HueShift, Saturation, Contrast, RedChannel, GreenChannel, BlueChannel, Lift, Gamma, Gain, asyncToken);
+            await ChangeColorGradingAsync(duration, VolumeWeight, TonemapperMode, ToeStrength, ToeLength, 
+                ShoulderStrength, ShoulderLength, ShoulderAngle, ToneGamma, Temperature, Tint, PostExposure, 
+                ColorFilter, HueShift, Saturation, Contrast, RedChannel, GreenChannel, BlueChannel, Lift, 
+                Gamma, Gain, asyncToken);
         }
 
-        public async UniTask ChangeColorGradingAsync(float duration, float volumeWeight, string tonemapperMode,
+        public async UniTask ChangeColorGradingAsync(float duration, float volumeWeight, Tonemapper tonemapperMode,
                                                     float toeStrength, float toeLength, float shoulderStrength, float shoulderLength, float shoulderAngle, float toneGamma, 
                                                     float temperature, float tint, float postExposure, Color colorFilter, float hueShift, float saturation, float contrast,
                                                     Vector3 redChannel, Vector3 greenChannel, Vector3 blueChannel, Vector4 lift, Vector4 gamma, Vector4 gain,
@@ -204,8 +192,8 @@ namespace NaninovelPostProcess {
 
             var tasks = new List<UniTask>();
 
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            colorGrading.tonemapper.value = (Tonemapper)System.Enum.Parse(typeof(Tonemapper), tonemapperMode);
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            colorGrading.tonemapper.value = tonemapperMode;
 
             if (colorGrading.tonemapper.value == Tonemapper.Custom)
             {
@@ -234,19 +222,7 @@ namespace NaninovelPostProcess {
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
-        {
-            CompleteTweens();
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void CompleteTweens()
+        protected override void CompleteTweens()
         {
             if(volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
             if(temperatureTweener.Running) temperatureTweener.CompleteInstantly();
@@ -270,20 +246,14 @@ namespace NaninovelPostProcess {
             if(toneGammaTweener.Running) toneGammaTweener.CompleteInstantly();
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            colorGrading = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
+            base.Awake();
+            colorGrading = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
             colorGrading.SetAllOverridesTo(true);
             colorGrading.gradingMode.value = GradingMode.HighDefinitionRange;
-            volume.weight = 0f;
         }
 
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
-        }
         private async UniTask ChangeToeStrengthAsync(float toeStrength, float duration, AsyncToken asyncToken = default)
         {
             if (duration > 0) await toeStrengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveToeStrength.value, toeStrength, duration, x => colorGrading.toneCurveToeStrength.value = x), asyncToken, colorGrading);
@@ -380,158 +350,72 @@ namespace NaninovelPostProcess {
             else colorGrading.gain.value = gain;
         }
 
-        private Vector3 GetRedChannel() => new Vector3(colorGrading.mixerRedOutRedIn.value, colorGrading.mixerRedOutGreenIn.value, colorGrading.mixerRedOutBlueIn.value);
-        private Vector3 GetGreenChannel() => new Vector3(colorGrading.mixerGreenOutRedIn.value, colorGrading.mixerGreenOutGreenIn.value, colorGrading.mixerGreenOutBlueIn.value);
-        private Vector3 GetBlueChannel() => new Vector3(colorGrading.mixerBlueOutRedIn.value, colorGrading.mixerBlueOutGreenIn.value, colorGrading.mixerBlueOutBlueIn.value);
+        public Vector3 GetRedChannel() => new Vector3(colorGrading.mixerRedOutRedIn.value, colorGrading.mixerRedOutGreenIn.value, colorGrading.mixerRedOutBlueIn.value);
+        public Vector3 GetGreenChannel() => new Vector3(colorGrading.mixerGreenOutRedIn.value, colorGrading.mixerGreenOutGreenIn.value, colorGrading.mixerGreenOutBlueIn.value);
+        public Vector3 GetBlueChannel() => new Vector3(colorGrading.mixerBlueOutRedIn.value, colorGrading.mixerBlueOutGreenIn.value, colorGrading.mixerBlueOutBlueIn.value);
 
-        private void ApplyRedChannel(Vector3 red)
+        public void ApplyRedChannel(Vector3 red)
         {
             colorGrading.mixerRedOutRedIn.value = red.x;
             colorGrading.mixerRedOutGreenIn.value = red.y;
             colorGrading.mixerRedOutBlueIn.value = red.z;
         }
 
-        private void ApplyGreenChannel(Vector3 green)
+        public void ApplyGreenChannel(Vector3 green)
         {
             colorGrading.mixerGreenOutRedIn.value = green.x;
             colorGrading.mixerGreenOutGreenIn.value = green.y;
             colorGrading.mixerGreenOutBlueIn.value = green.z;
         }
 
-        private void ApplyBlueChannel(Vector3 blue)
+        public void ApplyBlueChannel(Vector3 blue)
         {
             colorGrading.mixerBlueOutRedIn.value = blue.x;
             colorGrading.mixerBlueOutGreenIn.value = blue.y;
             colorGrading.mixerBlueOutBlueIn.value = blue.z;
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
+
         public string SceneAssistantParameters()
         {
-            EditorGUIUtility.labelWidth = 190;
+            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
+            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+            colorGrading.tonemapper.value = SpawnSceneAssistant.EnumField("Mode", colorGrading.tonemapper.value);
 
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Mode", GUILayout.Width(190));
-            string[] toneMappers = new string[] { "None", "Neutral", "ACES", "Custom" };
-            var mapIndex = Array.IndexOf(toneMappers, colorGrading.tonemapper.value.ToString());
-            mapIndex = EditorGUILayout.Popup(mapIndex, toneMappers, GUILayout.Width(220));
-            colorGrading.tonemapper.value = (Tonemapper)mapIndex;
-            GUILayout.EndHorizontal();
-
-            if(colorGrading.tonemapper.value.ToString() == "Custom")
+            if (colorGrading.tonemapper.value == Tonemapper.Custom)
             {
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Toe Strength", GUILayout.Width(190));
-                colorGrading.toneCurveToeStrength.value = EditorGUILayout.Slider(colorGrading.toneCurveToeStrength.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Toe Length", GUILayout.Width(190));
-                colorGrading.toneCurveToeLength.value = EditorGUILayout.Slider(colorGrading.toneCurveToeLength.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Shoulder Strength", GUILayout.Width(190));
-                colorGrading.toneCurveShoulderStrength.value = EditorGUILayout.Slider(colorGrading.toneCurveShoulderStrength.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                colorGrading.toneCurveShoulderLength.value = EditorGUILayout.FloatField("Shoulder Length", colorGrading.toneCurveShoulderLength.value, GUILayout.Width(413));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Shoulder Angle", GUILayout.Width(190));
-                colorGrading.toneCurveShoulderAngle.value = EditorGUILayout.Slider(colorGrading.toneCurveShoulderAngle.value, 0f, 1f, GUILayout.Width(220));
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                colorGrading.toneCurveGamma.value = EditorGUILayout.FloatField("Gamma", colorGrading.toneCurveGamma.value, GUILayout.Width(413));
-                GUILayout.EndHorizontal();
+                colorGrading.toneCurveToeStrength.value = SpawnSceneAssistant.SliderField("Toe Strength", colorGrading.toneCurveToeStrength.value, 0f, 1f);
+                colorGrading.toneCurveToeLength.value = SpawnSceneAssistant.SliderField("Toe Length", colorGrading.toneCurveToeLength.value, 0f, 1f);
+                colorGrading.toneCurveShoulderStrength.value = SpawnSceneAssistant.SliderField("Shoulder Strength", colorGrading.toneCurveShoulderStrength.value, 0f, 1f);
+                colorGrading.toneCurveShoulderLength.value = SpawnSceneAssistant.SliderField("Shoulder Length", colorGrading.toneCurveShoulderLength.value, 0f, 1f);
+                colorGrading.toneCurveShoulderAngle.value = SpawnSceneAssistant.SliderField("Shoulder Angle", colorGrading.toneCurveShoulderAngle.value, 0f, 1f);
+                colorGrading.toneCurveGamma.value = SpawnSceneAssistant.FloatField("Gamma", colorGrading.toneCurveGamma.value);
             }
 
-            GUILayout.BeginHorizontal();
-            colorGrading.temperature.value = EditorGUILayout.FloatField("Temperature", colorGrading.temperature.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            colorGrading.temperature.value = SpawnSceneAssistant.FloatField("Temperature", colorGrading.temperature.value);
+            colorGrading.tint.value = SpawnSceneAssistant.FloatField("Tint", colorGrading.tint.value);
+            colorGrading.postExposure.value = SpawnSceneAssistant.FloatField("Post Exposure", colorGrading.postExposure.value);
+            colorGrading.colorFilter.value = SpawnSceneAssistant.ColorField("Color Filter", colorGrading.colorFilter.value);
+            colorGrading.hueShift.value = SpawnSceneAssistant.FloatField("Hue Shift", colorGrading.hueShift.value);
+            colorGrading.saturation.value = SpawnSceneAssistant.FloatField("Saturation", colorGrading.saturation.value);
+            colorGrading.contrast.value = SpawnSceneAssistant.FloatField("Contrast", colorGrading.contrast.value);
+            ApplyRedChannel(SpawnSceneAssistant.Vector3Field("Red Channel", GetRedChannel()));
+            ApplyGreenChannel(SpawnSceneAssistant.Vector3Field("Green Channel", GetGreenChannel()));
+            ApplyBlueChannel(SpawnSceneAssistant.Vector3Field("Blue Channel", GetBlueChannel()));
+            colorGrading.lift.value = SpawnSceneAssistant.Vector4Field("Lift", colorGrading.lift.value);
+            colorGrading.gamma.value = SpawnSceneAssistant.Vector4Field("Gamma", colorGrading.gamma.value);
+            colorGrading.gain.value = SpawnSceneAssistant.Vector4Field("Gain", colorGrading.gain.value);
 
-            GUILayout.BeginHorizontal();
-            colorGrading.tint.value = EditorGUILayout.FloatField("Tint", colorGrading.tint.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            colorGrading.postExposure.value = EditorGUILayout.FloatField("Post Exposure", colorGrading.postExposure.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Color", GUILayout.Width(190));
-            colorGrading.colorFilter.value = EditorGUILayout.ColorField(colorGrading.colorFilter.value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            colorGrading.hueShift.value = EditorGUILayout.FloatField("Hue Shift", colorGrading.hueShift.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            colorGrading.saturation.value = EditorGUILayout.FloatField("Saturation", colorGrading.saturation.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            colorGrading.contrast.value = EditorGUILayout.FloatField("Contrast", colorGrading.contrast.value, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Red Channel", GUILayout.Width(190));
-            colorGrading.mixerRedOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutRedIn.value, GUILayout.Width(70));
-            colorGrading.mixerRedOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutGreenIn.value, GUILayout.Width(70));
-            colorGrading.mixerRedOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerRedOutBlueIn.value, GUILayout.Width(70));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Green Channel", GUILayout.Width(190));
-            colorGrading.mixerGreenOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutRedIn.value, GUILayout.Width(70));
-            colorGrading.mixerGreenOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutGreenIn.value, GUILayout.Width(70));
-            colorGrading.mixerGreenOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerGreenOutBlueIn.value, GUILayout.Width(70));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Blue Channel", GUILayout.Width(190));
-            colorGrading.mixerBlueOutRedIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutRedIn.value, GUILayout.Width(70));
-            colorGrading.mixerBlueOutGreenIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutGreenIn.value, GUILayout.Width(70));
-            colorGrading.mixerBlueOutBlueIn.value = EditorGUILayout.FloatField(colorGrading.mixerBlueOutBlueIn.value, GUILayout.Width(70));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Lift", GUILayout.Width(190));
-            colorGrading.lift.value = EditorGUILayout.Vector4Field("", colorGrading.lift.value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Gamma", GUILayout.Width(190));
-            colorGrading.gamma.value = EditorGUILayout.Vector4Field("", colorGrading.gamma.value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Gain", GUILayout.Width(190));
-            colorGrading.gain.value = EditorGUILayout.Vector4Field("", colorGrading.gain.value, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            return base.GetSpawnString();
+            return SpawnSceneAssistant.GetSpawnString(ParameterList());
         }
 
-        public IReadOnlyDictionary<string,string> ParameterList()
+        public IReadOnlyDictionary<string, string> ParameterList()
         {
             return new Dictionary<string, string>()
             {
                 {"time", Duration.ToString()},
-                {"weight", volume.weight.ToString()},
+                {"weight", Volume.weight.ToString()},
                 {"mode", colorGrading.tonemapper.value.ToString()},
                 {"toeStrength", colorGrading.toneCurveToeStrength.value.ToString()},
                 {"toeLength", colorGrading.toneCurveToeLength.value.ToString()},
@@ -555,18 +439,17 @@ namespace NaninovelPostProcess {
             };
         }
 
-#endif
+    #endif
     }
 
 
-#if UNITY_EDITOR
-
+    #if UNITY_EDITOR
     [CustomEditor(typeof(ColorGradingHDR))]
-    public class CopyFXColorGradingHDR : PostProcessObjectEditor
+    public class ColorGradingHDREditor : PostProcessObjectEditor
     {
-        protected override string label => "colorGradingHDR";
+        protected override string Label => "colorGradingHDR";
     }
-#endif
+    #endif
 
 }
 

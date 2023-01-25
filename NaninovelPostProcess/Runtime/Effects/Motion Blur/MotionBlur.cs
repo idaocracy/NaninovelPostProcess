@@ -15,35 +15,23 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class MotionBlur : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ISceneAssistant
+    public class MotionBlur : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
     {
-        protected float Duration { get; private set; }
-        protected float VolumeWeight { get; private set; }
         protected float ShutterAngle { get; private set; }
         protected float SampleCount { get; private set; }
-        protected float FadeOutDuration { get; private set; }
 
-        private readonly Tweener<FloatTween> volumeWeightTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> shutterAngleTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> sampleCountTweener = new Tweener<FloatTween>();
 
-        [Header("Spawn/Fadein Settings")]
-        [SerializeField] private float defaultDuration = 0.35f;
-        [Header("Volume Settings")]
-        [SerializeField] private float defaultVolumeWeight = 1f;
         [Header("Motion Blur Settings")]
-        [SerializeField] private float defaultShutterAngle = 270f;
-        [SerializeField] private float defaultSampleCount = 10f;
-        [Header("Despawn/Fadeout Settings")]
-        [SerializeField] private float defaultFadeOutDuration = 0.35f;
+        [SerializeField, Range(0f, 360f)] private float defaultShutterAngle = 270f;
+        [SerializeField, Range(4, 32)] private float defaultSampleCount = 10f;
 
-        private PostProcessVolume volume;
         private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
 
-        public virtual void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
+        public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            Duration = asap ? 0 : Mathf.Abs(parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDuration);
-            VolumeWeight = parameters?.ElementAtOrDefault(1)?.AsInvariantFloat() ?? defaultVolumeWeight;
+            base.SetSpawnParameters(parameters, asap);
             ShutterAngle = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultShutterAngle;
             SampleCount = parameters?.ElementAtOrDefault(2)?.AsInvariantFloat() ?? defaultSampleCount;
         }
@@ -58,43 +46,25 @@ namespace NaninovelPostProcess {
         public async UniTask ChangeDoFAsync(float duration, float volumeWeight, float focusDistance, float focalLength, AsyncToken asyncToken = default)
         {
             var tasks = new List<UniTask>();
-            if (volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
+            if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             if (motionBlur.shutterAngle.value != focusDistance) tasks.Add(ChangeShutterAngleAsync(focusDistance, duration, asyncToken));
             if (motionBlur.sampleCount.value != focalLength) tasks.Add(ChangeSampleCountAsync(focalLength, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);
         }
 
-        public void SetDestroyParameters(IReadOnlyList<string> parameters)
-        {
-            FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultFadeOutDuration;
-        }
-
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
-        {
-            CompleteTweens();
-            var duration = asyncToken.Completed ? 0 : FadeOutDuration;
-            await ChangeVolumeWeightAsync(0f, duration, asyncToken);
-        }
-
-        private void CompleteTweens()
+        protected override void CompleteTweens()
         {
             if (shutterAngleTweener.Running) shutterAngleTweener.CompleteInstantly();
             if (sampleCountTweener.Running) sampleCountTweener.CompleteInstantly();
             if (volumeWeightTweener.Running) volumeWeightTweener.CompleteInstantly();
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            volume = GetComponent<PostProcessVolume>();
-            motionBlur = volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>() ?? volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.MotionBlur>();
+            base.Awake();
+            motionBlur = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.MotionBlur>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.MotionBlur>();
             motionBlur.SetAllOverridesTo(true);
-            volume.weight = 0f;
-        }
-        private async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
-        {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(volume.weight, volumeWeight, duration, x => volume.weight = x), asyncToken, volume);
-            else volume.weight = volumeWeight;
         }
         private async UniTask ChangeShutterAngleAsync(float shutterAngle, float duration, AsyncToken asyncToken = default)
         {
@@ -109,56 +79,44 @@ namespace NaninovelPostProcess {
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
 
         public string SceneAssistantParameters()
         {
-            EditorGUIUtility.labelWidth = 190;
-            GUILayout.BeginHorizontal();
-            Duration = EditorGUILayout.FloatField("Fade-in time", Duration, GUILayout.Width(413));
-            GUILayout.EndHorizontal();
+            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
+            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
+            motionBlur.shutterAngle.value = SpawnSceneAssistant.SliderField("Shutter Angle", motionBlur.shutterAngle.value, 0f, 360f);
+            motionBlur.sampleCount.value = (int)SpawnSceneAssistant.SliderField("Sample Count", motionBlur.sampleCount.value, 4, 32);
 
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Volume Weight", GUILayout.Width(190));
-            volume.weight = EditorGUILayout.Slider(volume.weight, 0f, 1f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Shutter Angle", GUILayout.Width(190));
-            motionBlur.shutterAngle.value = EditorGUILayout.Slider(motionBlur.shutterAngle.value, 0f, 360f, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Sample Count", GUILayout.Width(190));
-            motionBlur.sampleCount.value = (int)EditorGUILayout.Slider(motionBlur.sampleCount.value, 4, 32, GUILayout.Width(220));
-            GUILayout.EndHorizontal();
-
-            return base.GetSpawnString();
+            return SpawnSceneAssistant.GetSpawnString(ParameterList());
         }
 
         public IReadOnlyDictionary<string, string> ParameterList()
         {
+            if (motionBlur == null) return null;
+
             return new Dictionary<string, string>()
             {
                 { "time", Duration.ToString()},
-                { "weight", volume.weight.ToString()},
+                { "weight", Volume.weight.ToString()},
                 { "shutterAngle", motionBlur.shutterAngle.value.ToString()},
-                { "sampleCount", motionBlur.shutterAngle.value.ToString()},
+                { "sampleCount", motionBlur.sampleCount.value.ToString()},
             };
         }
 
-#endif
+    #endif
     }
 
-#if UNITY_EDITOR
+
+    #if UNITY_EDITOR
 
     [CustomEditor(typeof(MotionBlur))]
-    public class CopyFXMotionBlur : PostProcessObjectEditor
+    public class MotionBlurEditor : PostProcessObjectEditor
     {
-        protected override string label => "motionBlur";
+        protected override string Label => "motionBlur";
     }
 
-#endif
+    #endif
 
 }
 

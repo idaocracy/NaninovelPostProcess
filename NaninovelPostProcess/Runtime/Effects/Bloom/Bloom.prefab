@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2614796084570639616}
   - component: {fileID: 7018614623841673359}
   - component: {fileID: 624958787489417217}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Bloom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -62,10 +62,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultDuration: 0.35
-  defaultVolumeWeight: 1
-  defaultIntensity: 10
+  defaultFadeOutDuration: 0.312
+  defaultVolumeWeight: 0.51
+  defaultIntensity: 0
   defaultThreshold: 1
-  defaultSoftKnee: 0.5
+  defaultSoftKnee: 0.375
   defaultClamp: 65472
   defaultDiffusion: 7
   defaultAnamorphicRatio: 0
@@ -74,4 +75,3 @@ MonoBehaviour:
   defaultDirtTextureId: 
   dirtTextures: []
   defaultDirtIntensity: 0
-  defaultFadeOutDuration: 0.35

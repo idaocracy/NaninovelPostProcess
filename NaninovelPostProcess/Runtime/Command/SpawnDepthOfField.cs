@@ -14,7 +14,7 @@ namespace Naninovel.PostProcess
         public DecimalParameter FocalLength;
         public StringParameter MaxBlurSize;
 
-        protected override string Path => "DepthOfField";
+        protected override string Path => "DoF";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {
