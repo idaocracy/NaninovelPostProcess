@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,7 +17,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingEXT : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ITextureParameterized, ISceneAssistant
+    public class ColorGradingEXT : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessSpawnObject.ITextureParameterized
     {
         protected string LookUpTexture { get; private set; }
 
@@ -26,7 +27,7 @@ namespace NaninovelPostProcess {
 
         private UnityEngine.Rendering.PostProcessing.ColorGrading colorGrading;
 
-        public List<Texture> TextureItems() => lookUpTextures;
+        public List<Texture> TextureItems => lookUpTextures;
 
         public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
@@ -70,40 +71,25 @@ namespace NaninovelPostProcess {
             else lookUpTextures.Select(t => t != null && t.name == imageId);
         }
 
-    #if UNITY_EDITOR
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            colorGrading.externalLut.value = SpawnSceneAssistant.TextureField("Lookup Texture", colorGrading.externalLut.value, this is PostProcessObject.ITextureParameterized textureParameterized ? textureParameterized.TextureItems() : null);
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (colorGrading == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>()
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "lookUpTexture", colorGrading.externalLut.value?.name},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
+                { new ParameterValue("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false) },
             };
         }
-    #endif
+
     }
 
-
-    #if UNITY_EDITOR
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(ColorGradingEXT))]
-    public class ColorGradingEXTEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "colorGradingEXT";
-    }
-
-    #endif
+    public class ColorGradingEXTEditor : SpawnObjectEditor { }
+#endif
 
 }
+
+
 
 #endif

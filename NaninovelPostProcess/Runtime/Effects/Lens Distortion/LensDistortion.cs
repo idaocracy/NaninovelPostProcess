@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class LensDistortion : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
+    public class LensDistortion : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected float Intensity { get; private set; }
         protected float XMultiplier { get; private set; }
@@ -126,51 +127,26 @@ namespace NaninovelPostProcess {
             if (duration > 0) await scaleTweener.RunAsync(new FloatTween(lensDistortion.scale.value, scale, duration, x => lensDistortion.scale.value = x), asyncToken, lensDistortion);
             else lensDistortion.scale.value = scale;
         }
-        
-    #if UNITY_EDITOR
-        public string SceneAssistantParameters()
+
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            lensDistortion.intensity.value = SpawnSceneAssistant.SliderField("Intensity", lensDistortion.intensity.value, -100f, 100f);
-            lensDistortion.intensityX.value = SpawnSceneAssistant.SliderField("X Multiplier", lensDistortion.intensityX.value, 0, 1f);
-            lensDistortion.intensityY.value = SpawnSceneAssistant.SliderField("Y Multiplier", lensDistortion.intensityY.value, 0, 1f);
-            lensDistortion.centerX.value = SpawnSceneAssistant.SliderField("Center X", lensDistortion.centerX.value, -1f, 1f);
-            lensDistortion.centerY.value = SpawnSceneAssistant.SliderField("Center Y", lensDistortion.centerY.value, 1f, 1f);
-            lensDistortion.scale.value = SpawnSceneAssistant.SliderField("Scale", lensDistortion.scale.value, 0.01f, 5f);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (lensDistortion == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "intensity", lensDistortion.intensity.value.ToString()},
-                { "xMultiplier", lensDistortion.intensityX.value.ToString()},
-                { "yMultiplier", lensDistortion.intensityY.value.ToString()},
-                { "centerX", lensDistortion.centerX.value.ToString()},
-                { "centerY", lensDistortion.centerY.value.ToString()},
-                { "scale", lensDistortion.scale.value.ToString()},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("Intensity", () => lensDistortion.intensity.value, v => lensDistortion.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, -100f, 100f), false)},
+                { new ParameterValue("IntensityX", () => lensDistortion.intensityX.value, v => lensDistortion.intensityX.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("IntensityY", () => lensDistortion.intensityY.value, v => lensDistortion.intensityY.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("CenterX", () => lensDistortion.centerX.value, v => lensDistortion.centerX.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false)},
+                { new ParameterValue("CenterY", () => lensDistortion.centerY.value, v => lensDistortion.centerY.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false)},
+                { new ParameterValue("Scale", () => lensDistortion.scale.value, v => lensDistortion.scale.value = (float)v, (i,p) => i.FloatSliderField(p, 0.01f, 5f), false)},
             };
         }
-    #endif
     }
-
 
 #if UNITY_EDITOR
-
     [CustomEditor(typeof(LensDistortion))]
-    public class LensDistortionEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "lensDistortion";
-
-    }
-
+    public class LensDistortionEditor : SpawnObjectEditor { }
 #endif
 
 }

@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,7 +17,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Bloom : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ITextureParameterized, ISceneAssistant
+    public class Bloom : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessSpawnObject.ITextureParameterized
     {
         protected float Intensity { get; private set; }
         protected float Threshold { get; private set; }
@@ -28,6 +29,8 @@ namespace NaninovelPostProcess
         protected bool FastMode { get; private set; }
         protected string DirtTexture { get; private set; }
         protected float DirtIntensity { get; private set; }
+
+        public List<Texture> TextureItems => dirtTextures;
 
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
         private readonly Tweener<FloatTween> thresholdTweener = new Tweener<FloatTween>();
@@ -53,8 +56,6 @@ namespace NaninovelPostProcess
         [SerializeField, UnityEngine.Min(0f)] private float defaultDirtIntensity = 0f;
 
         private UnityEngine.Rendering.PostProcessing.Bloom bloom;
-
-        public List<Texture> TextureItems() => dirtTextures;
 
         public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
@@ -163,59 +164,30 @@ namespace NaninovelPostProcess
             else dirtTextures.Select(t => t != null && t.name == imageId);
         }
 
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Duration", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            bloom.intensity.value = SpawnSceneAssistant.FloatField("Intensity", bloom.intensity.value);
-            bloom.threshold.value = SpawnSceneAssistant.FloatField("Threshold", bloom.threshold.value);
-            bloom.softKnee.value = SpawnSceneAssistant.SliderField("Soft Knee", bloom.softKnee.value, 0f, 1f);
-            bloom.clamp.value = SpawnSceneAssistant.FloatField("Clamp", bloom.clamp.value);
-            bloom.diffusion.value = SpawnSceneAssistant.SliderField("Diffusion", bloom.diffusion.value, 1f, 10f);
-            bloom.anamorphicRatio.value = SpawnSceneAssistant.SliderField("Anamorphic Ratio", bloom.anamorphicRatio.value, -1f, 1f);
-            bloom.color.value = SpawnSceneAssistant.ColorField("Color", bloom.color.value);
-            bloom.fastMode.value = SpawnSceneAssistant.BooleanField("Fast Mode", bloom.fastMode.value);
-            bloom.dirtTexture.value = SpawnSceneAssistant.TextureField("Dirt Texture", bloom.dirtTexture.value, dirtTextures) ?? null;
-            bloom.dirtIntensity.value = SpawnSceneAssistant.FloatField("Dirt Intensity", bloom.dirtIntensity.value);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (bloom == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>()
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "intensity", bloom.intensity.value.ToString()},
-                { "threshold", bloom.threshold.value.ToString()},
-                { "softKnee", bloom.softKnee.value.ToString()},
-                { "clamp", bloom.clamp.value.ToString()},
-                { "diffusion", bloom.diffusion.value.ToString()},
-                { "anamorphicRatio", bloom.anamorphicRatio.value.ToString()},
-                { "color", "#" + ColorUtility.ToHtmlStringRGBA(bloom.color.value)},
-                { "fastMode", bloom.fastMode.value.ToString().ToLower()},
-                { "dirtTexture", bloom.dirtTexture.value?.name},
-                { "dirtIntensity", bloom.dirtIntensity.value.ToString()}
+                //todo find out why image parameter throws an exception on generating command when null 
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
+                { new ParameterValue("Intensity", () => bloom.intensity.value, v => bloom.intensity.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), false) },
+                { new ParameterValue("Threshold", () => bloom.threshold.value, v => bloom.threshold.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), false) },
+                { new ParameterValue("SoftKnee", () => bloom.softKnee.value, v => bloom.softKnee.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
+                { new ParameterValue("Clamp", () => bloom.clamp.value, v => bloom.clamp.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Diffusion", () => bloom.diffusion.value, v => bloom.diffusion.value = (float)v, (i,p) => i.FloatSliderField(p, 1f, 10f), false) },
+                { new ParameterValue("AnamorphicRatio", () => bloom.anamorphicRatio.value, v => bloom.anamorphicRatio.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false) },
+                { new ParameterValue("Color", () => bloom.color.value, v => bloom.color.value = (Color)v, (i,p) => i.ColorField(p), false) },
+                { new ParameterValue("FastMode", () => bloom.fastMode.value, v => bloom.fastMode.value = (bool)v, (i,p) => i.BoolField(p), false) },
+                { new ParameterValue("DirtTexture", () => bloom.dirtTexture.value, v => bloom.dirtTexture.value = (Texture)v, (i,p) => i.TypeListField(p, Textures), false)},
+                { new ParameterValue("DirtIntensity", () => bloom.dirtIntensity.value, v => bloom.dirtIntensity.value = (float)v, (i,p) => i.FloatField(p), false) }
             };
         }
-
-    #endif
     }
-
 
     #if UNITY_EDITOR
-
     [CustomEditor(typeof(Bloom))]
-    public class BloomEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "bloom";
-    }
-
+    public class BloomEditor : SpawnObjectEditor { }
     #endif
 
 }

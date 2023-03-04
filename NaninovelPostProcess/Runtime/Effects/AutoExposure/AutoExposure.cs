@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess
 {
     [RequireComponent(typeof(PostProcessVolume))]
-    public class AutoExposure : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
+    public class AutoExposure : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected Vector2 Filtering { get; private set; }
         protected float Minimum { get; private set; }
@@ -132,60 +133,28 @@ namespace NaninovelPostProcess
             else autoExposure.speedDown.value = anamorphicRatio;
         }
 
-
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-
-            Duration = SpawnSceneAssistant.FloatField("Duration", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            autoExposure.filtering.value = SpawnSceneAssistant.Vector2Field("Filtering", autoExposure.filtering.value);
-            autoExposure.minLuminance.value = SpawnSceneAssistant.SliderField("Minimum (EV)", autoExposure.minLuminance.value, -9f, 9f);
-            autoExposure.maxLuminance.value = SpawnSceneAssistant.SliderField("Maximum (EV)", autoExposure.maxLuminance.value, -9f, 9f);
-            autoExposure.keyValue.value = SpawnSceneAssistant.FloatField("Exposure Compensation", autoExposure.keyValue.value);
-            autoExposure.eyeAdaptation.value = SpawnSceneAssistant.EnumField("Type", autoExposure.eyeAdaptation.value);
-
-            if (autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)
+            return new List<ParameterValue>()
             {
-                autoExposure.speedUp.value = SpawnSceneAssistant.FloatField("Speed Up", autoExposure.speedUp.value);
-                autoExposure.speedDown.value = SpawnSceneAssistant.FloatField("Speed Down", autoExposure.speedDown.value);
-            }
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (autoExposure == null) return null;
-
-            return new Dictionary<string, string>()
-            {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "filteringX", autoExposure.filtering.value.x.ToString()},
-                { "filteringY", autoExposure.filtering.value.y.ToString()},
-                { "minLuminance", autoExposure.minLuminance.value.ToString()},
-                { "maxLuminance", autoExposure.maxLuminance.value.ToString()},
-                { "exposureCompensation", autoExposure.keyValue.value.ToString()},
-                { "progressiveOrFixed", autoExposure.eyeAdaptation.value.ToString()},
-                { "progressiveSpeedUp", autoExposure.speedUp.value.ToString()},
-                { "progressiveSpeedDown", autoExposure.speedDown.value.ToString()},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
+                { new ParameterValue("FilteringX", () => autoExposure.filtering.value.x, v => autoExposure.filtering.value.x = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("FilteringY", () => autoExposure.filtering.value.y, v => autoExposure.filtering.value.y = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Minimum", () => autoExposure.minLuminance.value, v => autoExposure.minLuminance.value = (float)v, (i,p) => i.FloatSliderField(p, -9f, 9f), false) },
+                { new ParameterValue("Maximum", () => autoExposure.maxLuminance.value, v => autoExposure.maxLuminance.value = (float)v, (i,p) => i.FloatSliderField(p, -9f, 9f), false) },
+                { new ParameterValue("ExposureCompensation", () => autoExposure.keyValue.value, v => autoExposure.keyValue.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("ProgressiveOrfixed", () => autoExposure.eyeAdaptation.value, v => autoExposure.eyeAdaptation.value = (EyeAdaptation)v, (i,p) => i.EnumField(p), false) },
+                { new ParameterValue("ProgressiveSpeedUp", () => autoExposure.speedUp.value, v => autoExposure.speedUp.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive) },
+                { new ParameterValue("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive) },
             };
         }
-    #endif  
-    
+
     }
 
-#if UNITY_EDITOR
-
+    #if UNITY_EDITOR
     [CustomEditor(typeof(AutoExposure))]
-    public class AutoExposureEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "autoExposure";
-
-    }
-
+    public class AutoExposureEditor : SpawnObjectEditor { }
     #endif
 }
 

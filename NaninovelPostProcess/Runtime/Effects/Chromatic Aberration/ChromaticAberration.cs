@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,11 +17,13 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ChromaticAberration : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessObject.ITextureParameterized, ISceneAssistant
+    public class ChromaticAberration : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, PostProcessSpawnObject.ITextureParameterized
     {
         protected string SpectralLut { get; private set; }
         protected float Intensity { get; private set; }
         protected bool FastMode { get; private set; }
+        public override bool IsTransformable => false;
+        public override string CommandId => "ChromaticAberration";
 
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
 
@@ -32,7 +35,7 @@ namespace NaninovelPostProcess {
 
         private UnityEngine.Rendering.PostProcessing.ChromaticAberration chromaticAberration;
 
-        public List<Texture> TextureItems() => spectralLuts; 
+        public List<Texture> TextureItems => spectralLuts; 
 
         public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
@@ -83,45 +86,23 @@ namespace NaninovelPostProcess {
             else spectralLuts.Select(t => t != null && t.name == imageId);
         }
 
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            chromaticAberration.spectralLut.value = SpawnSceneAssistant.TextureField("Spectral LUT", chromaticAberration.spectralLut.value, spectralLuts);
-            chromaticAberration.intensity.value = SpawnSceneAssistant.SliderField("Intensity", chromaticAberration.intensity.value, 0f, 1f);
-            chromaticAberration.fastMode.value = SpawnSceneAssistant.BooleanField("Fast Mode", chromaticAberration.fastMode.value);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (chromaticAberration == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "spectralLut", chromaticAberration.spectralLut.value?.name},
-                { "intensity", chromaticAberration.intensity.value.ToString()},
-                { "fastMode", chromaticAberration.fastMode.value.ToString().ToLower()},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("SpectralLut", () => chromaticAberration.spectralLut.value, v => chromaticAberration.spectralLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false)},
+                { new ParameterValue("Intensity", () => chromaticAberration.intensity.value, v => chromaticAberration.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("FastMode", () => chromaticAberration.fastMode.value, v => chromaticAberration.fastMode.value = (bool)v, (i,p) => i.BoolField(p), false)},
             };
         }
-
-    #endif
     }
 
-    #if UNITY_EDITOR
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(ChromaticAberration))]
-    public class ChromaticAberrationEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "chromaticAberration";
-    }
-
-    #endif
+    public class ChromaticAberrationEditor : SpawnObjectEditor { }
+#endif
 
 }
 

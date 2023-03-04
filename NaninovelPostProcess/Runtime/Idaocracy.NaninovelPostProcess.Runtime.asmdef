@@ -2,8 +2,9 @@
     "name": "Idaocracy.NaninovelPostProcess.Runtime",
     "references": [
         "Elringus.Naninovel.Runtime",
+        "Elringus.Naninovel.Editor",
         "Unity.Postprocessing.Runtime",
-        "Elringus.Naninovel.Editor"
+        "Idaocracy.NaninovelSceneAssistant.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

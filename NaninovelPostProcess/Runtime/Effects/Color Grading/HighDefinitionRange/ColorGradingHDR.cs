@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-using Codice.CM.Client.Differences.Graphic;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -16,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class ColorGradingHDR : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
+    public class ColorGradingHDR : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected Tonemapper TonemapperMode { get; private set; }
         protected float ToeStrength { get; private set; }
@@ -375,81 +375,41 @@ namespace NaninovelPostProcess {
             colorGrading.mixerBlueOutBlueIn.value = blue.z;
         }
 
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            colorGrading.tonemapper.value = SpawnSceneAssistant.EnumField("Mode", colorGrading.tonemapper.value);
-
-            if (colorGrading.tonemapper.value == Tonemapper.Custom)
+            return new List<ParameterValue>()
             {
-                colorGrading.toneCurveToeStrength.value = SpawnSceneAssistant.SliderField("Toe Strength", colorGrading.toneCurveToeStrength.value, 0f, 1f);
-                colorGrading.toneCurveToeLength.value = SpawnSceneAssistant.SliderField("Toe Length", colorGrading.toneCurveToeLength.value, 0f, 1f);
-                colorGrading.toneCurveShoulderStrength.value = SpawnSceneAssistant.SliderField("Shoulder Strength", colorGrading.toneCurveShoulderStrength.value, 0f, 1f);
-                colorGrading.toneCurveShoulderLength.value = SpawnSceneAssistant.SliderField("Shoulder Length", colorGrading.toneCurveShoulderLength.value, 0f, 1f);
-                colorGrading.toneCurveShoulderAngle.value = SpawnSceneAssistant.SliderField("Shoulder Angle", colorGrading.toneCurveShoulderAngle.value, 0f, 1f);
-                colorGrading.toneCurveGamma.value = SpawnSceneAssistant.FloatField("Gamma", colorGrading.toneCurveGamma.value);
-            }
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
+                { new ParameterValue("TonemapperMode", () => colorGrading.tonemapper.value, v => colorGrading.tonemapper.value = (Tonemapper)v, (i,p) => i.EnumField(p), false) },
+                
+                { new ParameterValue("ToeStrength", () => colorGrading.toneCurveToeStrength.value, v => colorGrading.toneCurveToeStrength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new ParameterValue("ToeLength", () => colorGrading.toneCurveToeLength.value, v => colorGrading.toneCurveToeLength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new ParameterValue("ShoulderStrength", () => colorGrading.toneCurveShoulderStrength.value, v => colorGrading.toneCurveShoulderStrength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new ParameterValue("ShoulderLength", () => colorGrading.toneCurveShoulderLength.value, v => colorGrading.toneCurveShoulderLength.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new ParameterValue("ShoulderAngle", () => colorGrading.toneCurveShoulderAngle.value, v => colorGrading.toneCurveShoulderAngle.value = (float)v, (i,p) => i.FloatField(p, 0.01f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
 
-            colorGrading.temperature.value = SpawnSceneAssistant.FloatField("Temperature", colorGrading.temperature.value);
-            colorGrading.tint.value = SpawnSceneAssistant.FloatField("Tint", colorGrading.tint.value);
-            colorGrading.postExposure.value = SpawnSceneAssistant.FloatField("Post Exposure", colorGrading.postExposure.value);
-            colorGrading.colorFilter.value = SpawnSceneAssistant.ColorField("Color Filter", colorGrading.colorFilter.value);
-            colorGrading.hueShift.value = SpawnSceneAssistant.FloatField("Hue Shift", colorGrading.hueShift.value);
-            colorGrading.saturation.value = SpawnSceneAssistant.FloatField("Saturation", colorGrading.saturation.value);
-            colorGrading.contrast.value = SpawnSceneAssistant.FloatField("Contrast", colorGrading.contrast.value);
-            ApplyRedChannel(SpawnSceneAssistant.Vector3Field("Red Channel", GetRedChannel()));
-            ApplyGreenChannel(SpawnSceneAssistant.Vector3Field("Green Channel", GetGreenChannel()));
-            ApplyBlueChannel(SpawnSceneAssistant.Vector3Field("Blue Channel", GetBlueChannel()));
-            colorGrading.lift.value = SpawnSceneAssistant.Vector4Field("Lift", colorGrading.lift.value);
-            colorGrading.gamma.value = SpawnSceneAssistant.Vector4Field("Gamma", colorGrading.gamma.value);
-            colorGrading.gain.value = SpawnSceneAssistant.Vector4Field("Gain", colorGrading.gain.value);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            return new Dictionary<string, string>()
-            {
-                {"time", Duration.ToString()},
-                {"weight", Volume.weight.ToString()},
-                {"mode", colorGrading.tonemapper.value.ToString()},
-                {"toeStrength", colorGrading.toneCurveToeStrength.value.ToString()},
-                {"toeLength", colorGrading.toneCurveToeLength.value.ToString()},
-                {"shoulderStrength", colorGrading.toneCurveShoulderStrength.value.ToString()},
-                {"shoulderLength", colorGrading.toneCurveShoulderLength.value.ToString()},
-                {"shoulderAngle", colorGrading.toneCurveShoulderAngle.value.ToString()},
-                {"toneGamma", colorGrading.toneCurveGamma.value.ToString()},
-                {"temperature", colorGrading.temperature.value.ToString()},
-                {"tint", colorGrading.tint.value.ToString()},
-                {"postExposure", colorGrading.postExposure.value.ToString()},
-                {"colorFilter", "#" + ColorUtility.ToHtmlStringRGBA(colorGrading.colorFilter.value)},
-                {"hueShift", colorGrading.hueShift.value.ToString()},
-                {"saturation", colorGrading.saturation.value.ToString()},
-                {"contrast", colorGrading.contrast.value.ToString()},
-                {"redChannel", colorGrading.mixerRedOutRedIn.value + "," + colorGrading.mixerRedOutGreenIn.value + "," + colorGrading.mixerRedOutBlueIn.value},
-                {"greenChannel", colorGrading.mixerGreenOutRedIn.value + "," + colorGrading.mixerGreenOutGreenIn.value + "," + colorGrading.mixerGreenOutBlueIn.value},
-                {"blueChannel", colorGrading.mixerBlueOutRedIn.value + "," + colorGrading.mixerBlueOutGreenIn.value + "," + colorGrading.mixerBlueOutBlueIn.value},
-                {"lift", colorGrading.lift.value.x + "," + colorGrading.lift.value.y + "," + colorGrading.lift.value.z + "," + colorGrading.lift.value.w},
-                {"gamma", colorGrading.gamma.value.x + "," + colorGrading.gamma.value.y + "," + colorGrading.gamma.value.z + "," + colorGrading.gamma.value.w},
-                {"gain", colorGrading.gain.value.x + "," + colorGrading.gain.value.y + "," + colorGrading.gain.value.z + "," + colorGrading.gain.value.w},
+                { new ParameterValue("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("PostExposure", () => colorGrading.postExposure.value, v => colorGrading.postExposure.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p), false) },
+                { new ParameterValue("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = (float)v, (i,p) => i.FloatField(p), false) },
+                { new ParameterValue("RedChannel", () => GetRedChannel(), v => ApplyRedChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
+                { new ParameterValue("GreenChannel", () => GetGreenChannel(), v => ApplyGreenChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
+                { new ParameterValue("BlueChannel", () => GetBlueChannel(), v => ApplyBlueChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
+                { new ParameterValue("Lift", () => colorGrading.lift.value, v => colorGrading.lift.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
+                { new ParameterValue("Gamma", () => colorGrading.gamma.value, v => colorGrading.gamma.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
+                { new ParameterValue("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
             };
         }
-
-    #endif
     }
 
-
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     [CustomEditor(typeof(ColorGradingHDR))]
-    public class ColorGradingHDREditor : PostProcessObjectEditor
-    {
-        protected override string Label => "colorGradingHDR";
-    }
-    #endif
+    public class ColorGradingHDREditor : SpawnObjectEditor { }
+#endif
 
 }
 

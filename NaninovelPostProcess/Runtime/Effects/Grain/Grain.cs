@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -17,7 +18,7 @@ namespace NaninovelPostProcess
 { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class Grain : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
+    public class Grain : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected bool Colored { get; private set; }
         protected float Intensity { get; private set; }
@@ -94,56 +95,24 @@ namespace NaninovelPostProcess
             else grain.lumContrib.value = luminanceContribution;
         }
 
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            grain.colored.value = SpawnSceneAssistant.BooleanField("Colored", grain.colored.value);
-            grain.intensity.value = SpawnSceneAssistant.SliderField("Intensity", grain.intensity.value, 0f, 1f);
-            grain.size.value = SpawnSceneAssistant.SliderField("Size", grain.size.value, 0.3f, 3f);
-            grain.lumContrib.value = SpawnSceneAssistant.SliderField("Luminance Contribution", grain.lumContrib.value, 0f, 1f);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (grain == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "colored", grain.colored.value.ToString().ToLower()},
-                { "intensity", grain.intensity.value.ToString()},
-                { "size", grain.size.value.ToString()},
-                { "luminanceContribution", grain.lumContrib.value.ToString()},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("Colored", () => grain.colored.value, v => grain.colored.value = (bool)v, (i,p) => i.BoolField(p), false)},
+                { new ParameterValue("Intensity", () => grain.intensity.value, v => grain.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
+                { new ParameterValue("Size", () => grain.size.value, v => grain.size.value = (float)v, (i,p) => i.FloatSliderField(p, 0.3f, 3f), false) },
+                { new ParameterValue("LuminanceContribution", () => grain.lumContrib.value, v => grain.lumContrib.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
             };
         }
-
-    #endif
     }
 
-
-    #if UNITY_EDITOR
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(Grain))]
-    public class GrainEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "grain";
-        private UnityEngine.Rendering.PostProcessing.Grain grain;
-
-        protected override void Awake()
-        {
-            base.Awake();
-            grain = spawnObject.GetComponent<UnityEngine.Rendering.PostProcessing.Grain>();
-        }
-
-    }
-
-    #endif
+    public class GrainEditor : SpawnObjectEditor { }
+#endif
 
 }
 

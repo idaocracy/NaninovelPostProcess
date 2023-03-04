@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class MotionBlur : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
+    public class MotionBlur : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected float ShutterAngle { get; private set; }
         protected float SampleCount { get; private set; }
@@ -79,44 +80,23 @@ namespace NaninovelPostProcess {
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
 
-    #if UNITY_EDITOR
-
-        public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
         {
-            Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-            Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-            motionBlur.shutterAngle.value = SpawnSceneAssistant.SliderField("Shutter Angle", motionBlur.shutterAngle.value, 0f, 360f);
-            motionBlur.sampleCount.value = (int)SpawnSceneAssistant.SliderField("Sample Count", motionBlur.sampleCount.value, 4, 32);
-
-            return SpawnSceneAssistant.GetSpawnString(ParameterList());
-        }
-
-        public IReadOnlyDictionary<string, string> ParameterList()
-        {
-            if (motionBlur == null) return null;
-
-            return new Dictionary<string, string>()
+            return new List<ParameterValue>
             {
-                { "time", Duration.ToString()},
-                { "weight", Volume.weight.ToString()},
-                { "shutterAngle", motionBlur.shutterAngle.value.ToString()},
-                { "sampleCount", motionBlur.sampleCount.value.ToString()},
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("ShutterAngle", () => motionBlur.shutterAngle.value, v => motionBlur.shutterAngle.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 360f), false)},
+                { new ParameterValue("SampleCount", () => motionBlur.sampleCount.value, v => motionBlur.sampleCount.value = (int)v, (i,p) => i.IntSliderField(p, 0, 360), false)},
             };
         }
 
-    #endif
     }
 
-
-    #if UNITY_EDITOR
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(MotionBlur))]
-    public class MotionBlurEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "motionBlur";
-    }
-
-    #endif
+    public class MotionBlurEditor : SpawnObjectEditor { }
+#endif
 
 }
 

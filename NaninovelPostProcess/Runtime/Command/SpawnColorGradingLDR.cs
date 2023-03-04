@@ -34,8 +34,8 @@ namespace Naninovel.PostProcess
             new List<string> {
             ToSpawnParam(FadeDuration),
             ToSpawnParam(Weight),
-            ToSpawnParam(Contribution),
             ToSpawnParam(LookUpTexture),
+            ToSpawnParam(Contribution),
             ToSpawnParam(Temperature),
             ToSpawnParam(Tint),
             ToSpawnParam(ColorFilter),

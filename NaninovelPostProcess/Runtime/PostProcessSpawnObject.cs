@@ -5,17 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
-using UnityEditor;
+using NaninovelSceneAssistant;
 
 namespace NaninovelPostProcess { 
 
-    public abstract class PostProcessObject : SpawnObject
+    public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
     {
         public interface ITextureParameterized
         {
-            List<Texture> TextureItems();
+            List<Texture> TextureItems { get; }
         }
 
+        public override bool IsTransformable => false;
+
+        protected Dictionary<string, Texture> Textures;
+        public override string CommandId => this.name;
         public float Duration { get; protected set; }
         protected float VolumeWeight { get; private set; }
         protected float FadeOutDuration { get; private set; }
@@ -27,14 +31,13 @@ namespace NaninovelPostProcess {
 
         [Header("Spawn/Despawn settings")]
         [SerializeField, UnityEngine.Min(0f)] private float defaultSpawnDuration = 0.35f;
-        [SerializeField, Range(0f, 1f)] private float defaultDespawnDuration = 0.35f;
+        [SerializeField, UnityEngine.Min(0f)] private float defaultDespawnDuration = 0.35f;
         [Header("Volume Settings")]
         [SerializeField, Range(0f, 1f)] private float defaultVolumeWeight = 1f;
 
-        public static string[] textureIds;
-
-        protected virtual void Awake()
+        protected override void Awake()
         {
+            base.Awake();
 
             postProcessingConfiguration = Engine.GetConfiguration<PostProcessingConfiguration>();
             if (postProcessingConfiguration.OverrideObjectsLayer) gameObject.layer = postProcessingConfiguration.PostProcessingLayer;
@@ -44,9 +47,12 @@ namespace NaninovelPostProcess {
 
             if (this is ITextureParameterized textureParameterized)
             {
-                string[] nullArray = new string[] { "None" };
-                string[] texturesArray = textureParameterized.TextureItems().Select(s => s.name).ToArray();
-                textureIds = nullArray.Concat(texturesArray).ToArray();
+                Textures = new Dictionary<string, Texture>
+                {
+                    { "None", null }
+                };
+
+                textureParameterized.TextureItems.ForEach(x => Textures.Add(x.name, x));
             }
         }
 
@@ -77,26 +83,6 @@ namespace NaninovelPostProcess {
         protected abstract void CompleteTweens();
     }
 
-
-
-    #if UNITY_EDITOR
-
-        [CustomEditor(typeof(PostProcessObject))]
-        public class PostProcessObjectEditor : SpawnObjectEditor
-        {
-            protected PostProcessVolume Volume;
-            protected float Duration;
-
-            protected override void Awake()
-            {
-                base.Awake();
-                Volume = spawnObject.GetComponent<PostProcessVolume>();
-            }
-
-
-        }
-
-    #endif
 }
 
 #endif

@@ -17,8 +17,10 @@ namespace Naninovel.PostProcess
         public DecimalParameter AnamorphicRatio;
         public StringParameter Color;
         public BooleanParameter FastMode;
+        public StringParameter DirtTexture;
+        public BooleanParameter DirtIntensity;
 
-        protected override string Path => $"DoF";
+        protected override string Path => $"Bloom";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {
@@ -31,7 +33,9 @@ namespace Naninovel.PostProcess
             ToSpawnParam(Diffusion),
             ToSpawnParam(AnamorphicRatio),
             ToSpawnParam(Color),
-            ToSpawnParam(FastMode)
+            ToSpawnParam(FastMode),
+            ToSpawnParam(DirtTexture),
+            ToSpawnParam(DirtIntensity)
         };
 
         protected override StringListParameter GetDestroyParameters() => new List<string> {

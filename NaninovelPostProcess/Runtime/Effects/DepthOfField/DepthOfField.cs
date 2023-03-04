@@ -1,4 +1,4 @@
-﻿//2022 idaocracy
+﻿//2022-2023 idaocracy
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+using NaninovelSceneAssistant;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -15,7 +16,7 @@ using UnityEditor;
 namespace NaninovelPostProcess { 
 
     [RequireComponent(typeof(PostProcessVolume))]
-    public class DepthOfField : PostProcessObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable, ISceneAssistant
+    public class DepthOfField : PostProcessSpawnObject, Spawn.IParameterized, Spawn.IAwaitable, DestroySpawned.IParameterized, DestroySpawned.IAwaitable
     {
         protected float FocusDistance { get; private set; }
         protected float Aperture { get; private set; }
@@ -92,46 +93,24 @@ namespace NaninovelPostProcess {
             else dof.focalLength.value = focalLength;
         }
 
-    #if UNITY_EDITOR
-
-            public string SceneAssistantParameters()
+        public override List<ParameterValue> GetParams()
+        {
+            return new List<ParameterValue>
             {
-                Duration = SpawnSceneAssistant.FloatField("Fade-in time", Duration);
-                Volume.weight = SpawnSceneAssistant.SliderField("Volume Weight", Volume.weight, 0f, 1f);
-                dof.focusDistance.value = SpawnSceneAssistant.FloatField("Focus Distance", dof.focusDistance.value);
-                dof.aperture.value = SpawnSceneAssistant.SliderField("Aperture", dof.aperture.value, 0.1f, 32f);
-                dof.focalLength.value = SpawnSceneAssistant.SliderField("Focal Length", dof.focalLength.value, 1, 300);
-                dof.kernelSize.value = SpawnSceneAssistant.EnumField("Max Blur Size", dof.kernelSize.value);
-
-                return SpawnSceneAssistant.GetSpawnString(ParameterList());
-            }
-
-            public IReadOnlyDictionary<string, string> ParameterList()
-            {
-                if (dof == null) return null;
-
-                return new Dictionary<string, string>()
-                {
-                    { "time", Duration.ToString()},
-                    { "weight", Volume.weight.ToString()},
-                    { "intensity", dof.focusDistance.value.ToString()},
-                    { "aperture", dof.aperture.value.ToString()},
-                    { "focalLength", dof.focalLength.value.ToString()},
-                    { "maxBlurSize", dof.kernelSize.value.ToString()},
-                };
-            }
-    #endif
+                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, minValue:0), false)},
+                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
+                { new ParameterValue("FocusDistance", () => dof.focusDistance.value, v => dof.focusDistance.value = (float)v, (i,p) => i.FloatField(p, 0.1f), false)},
+                { new ParameterValue("Aperture", () => dof.aperture.value, v => dof.aperture.value = (float)v, (i,p) => i.FloatSliderField(p, 0.1f, 32f), false)},
+                { new ParameterValue("FocalLength", () => dof.focalLength.value, v => dof.focalLength.value = (float)v, (i,p) => i.FloatSliderField(p, 1f, 300f), false)},
+                { new ParameterValue("MaxBlurSize", () => dof.kernelSize.value, v => dof.kernelSize.value = (KernelSize)v, (i,p) => i.EnumField(p), false)},
+            };
+        }
     }
 
-    #if UNITY_EDITOR
-
+#if UNITY_EDITOR
     [CustomEditor(typeof(DepthOfField))]
-    public class DepthOfFieldEditor : PostProcessObjectEditor
-    {
-        protected override string Label => "doF";
-    }
-
-    #endif
+    public class DepthOfFieldEditor : SpawnObjectEditor { }
+#endif
 
 }
 

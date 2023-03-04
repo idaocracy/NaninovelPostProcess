@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2614796084570639616}
   - component: {fileID: 7018614623841673359}
   - component: {fileID: 6062619376309320995}
-  - component: {fileID: 4717744854929994854}
   m_Layer: 8
   m_Name: ColorGradingHDR
   m_TagString: Untagged
@@ -62,13 +61,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81079fa02d239a545a3f0af64098f945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LogResult: 0
-  defaultDuration: 0.35
+  defaultSpawnDuration: 0.35
+  defaultDespawnDuration: 0.35
   defaultVolumeWeight: 1
-  defaultMode: Low Definition Range
-  defaultLookUpTexture: None
-  lookUpTextures: []
-  defaultContribution: 1
+  defaultTonemapperMode: 0
+  defaultToeStrength: 0
+  defaultToeLength: 0.5
+  defaultShoulderStrength: 0
+  defaultShoulderLength: 0.5
+  defaultShoulderAngle: 0
+  defaultToneGamma: 1
   defaultTemperature: 0
   defaultTint: 0
   defaultPostExposure: 0
@@ -82,16 +84,3 @@ MonoBehaviour:
   defaultLift: {x: 1, y: 1, z: 1, w: 0}
   defaultGamma: {x: 1, y: 1, z: 1, w: 0}
   defaultGain: {x: 1, y: 1, z: 1, w: 0}
-  defaultFadeOutDuration: 0.35
---- !u!114 &4717744854929994854
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2261174484603219885}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

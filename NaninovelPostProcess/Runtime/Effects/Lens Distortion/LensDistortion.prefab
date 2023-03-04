@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4593720522486675509}
   - component: {fileID: -4877379761744591092}
   - component: {fileID: 8525144003916229999}
-  - component: {fileID: 515734395121903376}
   m_Layer: 8
   m_Name: LensDistortion
   m_TagString: MainCamera
@@ -62,25 +61,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3b971615083ab34e931a79ba8470859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultDuration: 0.35
+  defaultSpawnDuration: 0.35
+  defaultDespawnDuration: 0.35
   defaultVolumeWeight: 1
-  defaultFocusDistance: 0.1
   defaultIntensity: 0
   defaultXMultiplier: 1
   defaultYMultiplier: 1
   defaultCenterX: 0
   defaultCenterY: 0
   defaultScale: 1
-  defaultFadeOutDuration: 0
---- !u!114 &515734395121903376
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4593720522486675657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4d6977e149ae824282f3c963317d897, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
