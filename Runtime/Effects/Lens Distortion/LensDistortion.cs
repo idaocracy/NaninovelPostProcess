@@ -8,8 +8,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -128,6 +128,7 @@ namespace NaninovelPostProcess {
             else lensDistortion.scale.value = scale;
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>
@@ -142,9 +143,10 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("Scale", () => lensDistortion.scale.value, v => lensDistortion.scale.value = (float)v, (i,p) => i.FloatSliderField(p, 0.01f, 5f), false)},
             };
         }
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(LensDistortion))]
     public class LensDistortionEditor : SpawnObjectEditor { }
 #endif

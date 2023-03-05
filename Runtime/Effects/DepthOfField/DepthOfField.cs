@@ -8,8 +8,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -93,6 +93,7 @@ namespace NaninovelPostProcess {
             else dof.focalLength.value = focalLength;
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>
@@ -105,9 +106,10 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("MaxBlurSize", () => dof.kernelSize.value, v => dof.kernelSize.value = (KernelSize)v, (i,p) => i.EnumField(p), false)},
             };
         }
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(DepthOfField))]
     public class DepthOfFieldEditor : SpawnObjectEditor { }
 #endif

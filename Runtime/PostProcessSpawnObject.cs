@@ -1,25 +1,49 @@
-﻿#if UNITY_POST_PROCESSING_STACK_V2
+﻿//2022-2023 idaocracy
+
+#if UNITY_POST_PROCESSING_STACK_V2
 
 using Naninovel;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
+#endif
 
-namespace NaninovelPostProcess { 
+namespace NaninovelPostProcess
+{
+
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 
     public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
     {
+        public override bool IsTransformable => false;
+        public override string CommandId => this.name;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            Initialize();
+        }
+
+#else
+
+    public abstract class PostProcessSpawnObject : MonoBehaviour
+    {
+        protected virtual void Awake()
+        {
+            Initialize();
+        }
+
+#endif
         public interface ITextureParameterized
         {
             List<Texture> TextureItems { get; }
         }
 
-        public override bool IsTransformable => false;
-
         protected Dictionary<string, Texture> Textures;
-        public override string CommandId => this.name;
+
         public float Duration { get; protected set; }
         protected float VolumeWeight { get; private set; }
         protected float FadeOutDuration { get; private set; }
@@ -35,10 +59,8 @@ namespace NaninovelPostProcess {
         [Header("Volume Settings")]
         [SerializeField, Range(0f, 1f)] private float defaultVolumeWeight = 1f;
 
-        protected override void Awake()
+        private void Initialize()
         {
-            base.Awake();
-
             postProcessingConfiguration = Engine.GetConfiguration<PostProcessingConfiguration>();
             if (postProcessingConfiguration.OverrideObjectsLayer) gameObject.layer = postProcessingConfiguration.PostProcessingLayer;
 
@@ -48,9 +70,9 @@ namespace NaninovelPostProcess {
             if (this is ITextureParameterized textureParameterized)
             {
                 Textures = new Dictionary<string, Texture>
-                {
-                    { "None", null }
-                };
+                    {
+                        { "None", null }
+                    };
 
                 textureParameterized.TextureItems.ForEach(x => Textures.Add(x.name, x));
             }
@@ -82,7 +104,7 @@ namespace NaninovelPostProcess {
 
         protected abstract void CompleteTweens();
     }
-
 }
 
 #endif
+

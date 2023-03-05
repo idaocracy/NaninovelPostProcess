@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -163,6 +163,8 @@ namespace NaninovelPostProcess
             if (imageId == "None" || String.IsNullOrEmpty(imageId)) bloom.dirtTexture.value = null;
             else dirtTextures.Select(t => t != null && t.name == imageId);
         }
+        
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 
         public override List<ParameterValue> GetParams()
         {
@@ -183,9 +185,11 @@ namespace NaninovelPostProcess
                 { new ParameterValue("DirtIntensity", () => bloom.dirtIntensity.value, v => bloom.dirtIntensity.value = (float)v, (i,p) => i.FloatField(p), false) }
             };
         }
+
+#endif
     }
 
-    #if UNITY_EDITOR
+    #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(Bloom))]
     public class BloomEditor : SpawnObjectEditor { }
     #endif

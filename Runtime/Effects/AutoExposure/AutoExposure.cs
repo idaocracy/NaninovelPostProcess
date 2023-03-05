@@ -8,9 +8,9 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-using NaninovelSceneAssistant;
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using UnityEditor;
+using NaninovelSceneAssistant;
 #endif
 
 namespace NaninovelPostProcess
@@ -133,6 +133,7 @@ namespace NaninovelPostProcess
             else autoExposure.speedDown.value = anamorphicRatio;
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>()
@@ -149,10 +150,10 @@ namespace NaninovelPostProcess
                 { new ParameterValue("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive) },
             };
         }
-
+#endif
     }
 
-    #if UNITY_EDITOR
+    #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(AutoExposure))]
     public class AutoExposureEditor : SpawnObjectEditor { }
     #endif

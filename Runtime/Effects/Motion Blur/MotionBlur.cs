@@ -8,8 +8,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -79,7 +79,7 @@ namespace NaninovelPostProcess {
             if (duration > 0) await sampleCountTweener.RunAsync(new FloatTween((int)motionBlur.sampleCount.value, sampleCount, duration, x => motionBlur.sampleCount.value = (int)x), asyncToken, motionBlur);
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
-
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>
@@ -90,10 +90,10 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("SampleCount", () => motionBlur.sampleCount.value, v => motionBlur.sampleCount.value = (int)v, (i,p) => i.IntSliderField(p, 0, 360), false)},
             };
         }
-
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(MotionBlur))]
     public class MotionBlurEditor : SpawnObjectEditor { }
 #endif

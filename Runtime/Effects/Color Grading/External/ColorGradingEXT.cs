@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -71,6 +71,7 @@ namespace NaninovelPostProcess {
             else lookUpTextures.Select(t => t != null && t.name == imageId);
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>()
@@ -80,10 +81,11 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false) },
             };
         }
+#endif
 
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(ColorGradingEXT))]
     public class ColorGradingEXTEditor : SpawnObjectEditor { }
 #endif

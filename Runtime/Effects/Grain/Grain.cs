@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -95,6 +95,7 @@ namespace NaninovelPostProcess
             else grain.lumContrib.value = luminanceContribution;
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>
@@ -107,9 +108,10 @@ namespace NaninovelPostProcess
                 { new ParameterValue("LuminanceContribution", () => grain.lumContrib.value, v => grain.lumContrib.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
             };
         }
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(Grain))]
     public class GrainEditor : SpawnObjectEditor { }
 #endif

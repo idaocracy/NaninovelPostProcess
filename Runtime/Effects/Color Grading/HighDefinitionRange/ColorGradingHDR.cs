@@ -8,8 +8,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -375,6 +375,7 @@ namespace NaninovelPostProcess {
             colorGrading.mixerBlueOutBlueIn.value = blue.z;
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>()
@@ -404,9 +405,10 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
             };
         }
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(ColorGradingHDR))]
     public class ColorGradingHDREditor : SpawnObjectEditor { }
 #endif

@@ -15,6 +15,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.idaocracy.naninovelsceneassistant",
+            "expression": "",
+            "define": "NANINOVEL_SCENE_ASSISTANT_AVAILABLE"
+        }
+    ],
     "noEngineReferences": false
 }

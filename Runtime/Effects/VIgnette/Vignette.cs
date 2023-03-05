@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
-#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -165,6 +165,7 @@ namespace NaninovelPostProcess {
             else maskTextures.Select(t => t != null && t.name == imageId);
         }
 
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ParameterValue> GetParams()
         {
             return new List<ParameterValue>()
@@ -184,10 +185,10 @@ namespace NaninovelPostProcess {
                 { new ParameterValue("Opacity", () => vignette.opacity.value, v => vignette.opacity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Masked) },
             };
         }
-
+#endif
     }
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
     [CustomEditor(typeof(Vignette))]
     public class VignetteEditor : SpawnObjectEditor { }
 #endif
