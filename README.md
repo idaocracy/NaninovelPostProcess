@@ -13,14 +13,14 @@ Notice that the ColorGrading effect has been split into three different parts: H
 
 # Installation
 
-### New Version
+### New Version (V2)
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
 2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. 
 3. Follow step 3 and onwards in the old installation instructions. 
 
 
-### Old version 
+### Old version (V1)
 Check this video for a quick guide on installation and usage:
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/iAot5FwPO8w/0.jpg)](https://www.youtube.com/watch?v=iAot5FwPO8w)  
