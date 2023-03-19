@@ -9,7 +9,6 @@ namespace NaninovelPostProcess
     [EditInProjectSettings]
     public class PostProcessingConfiguration : Configuration
     {
-
 #if UNITY_POST_PROCESSING_STACK_V2
         [Tooltip("Will override the Layer of the objects that have the Post Processing Object Manager component added.")]
         public bool OverrideObjectsLayer = true;
@@ -47,5 +46,4 @@ namespace NaninovelPostProcess
         private const string message = "Post Process V2 has not been installed.";
 #endif
     }
-
 }

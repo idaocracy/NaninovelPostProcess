@@ -13,7 +13,6 @@ using NaninovelSceneAssistant;
 
 namespace NaninovelPostProcess
 {
-
 #if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 
     public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
@@ -107,4 +106,3 @@ namespace NaninovelPostProcess
 }
 
 #endif
-
