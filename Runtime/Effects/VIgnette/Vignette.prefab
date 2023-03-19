@@ -72,6 +72,5 @@ MonoBehaviour:
   defaultRoundness: 1
   defaultRounded: 1
   defaultMask: 
-  maskTextures:
-  - {fileID: 2800000, guid: 153c70781b1418940b9ea153abf0519d, type: 3}
+  maskTextures: []
   defaultOpacity: 1
