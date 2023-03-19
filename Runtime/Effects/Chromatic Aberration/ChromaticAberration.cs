@@ -54,8 +54,7 @@ namespace NaninovelPostProcess {
         {
             var tasks = new List<UniTask>();
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (chromaticAberration.spectralLut.value != null && chromaticAberration.spectralLut.value.name != spectralLut) 
-                chromaticAberration.spectralLut.value = ChangeTexture(spectralLut);
+            chromaticAberration.spectralLut.value = ChangeTexture(spectralLut);
             if (chromaticAberration.intensity.value != intensity) tasks.Add(ChangeIntensityAsync(intensity, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);

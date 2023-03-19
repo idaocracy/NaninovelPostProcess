@@ -107,6 +107,11 @@ namespace NaninovelPostProcess
         protected Texture ChangeTexture(string imageId)
         {
             if (imageId == "None" || String.IsNullOrEmpty(imageId)) return null;
+            else if (!Textures.ContainsKey(imageId))
+            {
+                Debug.LogWarning($"{imageId} was not found in texture list.");
+                return null;
+            }
             else return Textures.FirstOrDefault(t => t.Key == imageId).Value;
         }
     }

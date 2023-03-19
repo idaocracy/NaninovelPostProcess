@@ -72,7 +72,6 @@ MonoBehaviour:
   defaultAnamorphicRatio: 0
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
   defaultFastMode: 0
-  defaultDirtTextureId: AreaTex
-  dirtTextures:
-  - {fileID: 2800000, guid: 73ec4ae984a0a0f44a2be737e41a6f2f, type: 3}
+  defaultDirtTextureId: 
+  dirtTextures: []
   defaultDirtIntensity: 0

@@ -91,7 +91,7 @@ namespace NaninovelPostProcess
             if (bloom.diffusion.value != diffusion) tasks.Add(ChangeDiffusionAsync(diffusion, duration, asyncToken));
             if (bloom.anamorphicRatio.value != anamorphicRatio) tasks.Add(ChangeAnamorphicRatioAsync(anamorphicRatio, duration, asyncToken));
             if (bloom.color.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
-            if(bloom.dirtTexture.value.name != dirtTexture) bloom.dirtTexture.value = ChangeTexture(dirtTexture);
+            bloom.dirtTexture.value = ChangeTexture(dirtTexture);
             if (bloom.dirtIntensity.value != dirtIntensity) tasks.Add(ChangeDirtIntensityAsync(dirtIntensity, duration, asyncToken));
             bloom.fastMode.value = FastMode;
 

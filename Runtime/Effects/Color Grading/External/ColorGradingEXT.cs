@@ -47,7 +47,7 @@ namespace NaninovelPostProcess {
             var tasks = new List<UniTask>();
 
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (colorGrading.externalLut.value != null && colorGrading.externalLut.value.ToString() != lookUpTexture) colorGrading.externalLut.value = ChangeTexture(lookUpTexture);
+            colorGrading.externalLut.value = ChangeTexture(lookUpTexture);
             
             await UniTask.WhenAll(tasks);
         }
