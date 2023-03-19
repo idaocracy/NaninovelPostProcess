@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
-#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE && UNITY_EDITOR
 using NaninovelSceneAssistant;
 #endif
 
 namespace NaninovelPostProcess
 {
-#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE && UNITY_EDITOR
 
     public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
     {
