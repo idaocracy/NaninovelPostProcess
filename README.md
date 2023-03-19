@@ -16,9 +16,8 @@ Notice that the ColorGrading effect has been split into three different parts: H
 ### New Version
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
-2. Type in https://github.com/Idaocracy/NaninovelPostProcess#package and it should install automatically. 
+2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. 
 3. Follow step 3 and onwards in the old installation instructions. 
-*Note: This version includes scripts which are only compatible with Naninovel 1.19. If you are using an older version, navigate to Runtime and delete the Commands folder.*
 
 
 ### Old version 
