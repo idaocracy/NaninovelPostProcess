@@ -106,7 +106,7 @@ namespace NaninovelPostProcess {
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
             vignette.mode.value = (VignetteMode)System.Enum.Parse(typeof(VignetteMode), mode);
             if (vignette.color.value != color) tasks.Add(ChangeColorAsync(color, duration, asyncToken));
-            if (vignette.mask.value != null && vignette.mask.value.name != mask) ChangeTexture(mask);
+            if (vignette.mask.value != null && vignette.mask.value?.name != mask) vignette.mask.value = ChangeTexture(mask);
             if (vignette.opacity.value != opacity) tasks.Add(ChangeOpacityAsync(opacity, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);
@@ -158,11 +158,6 @@ namespace NaninovelPostProcess {
         {
             if (duration > 0) await opacityTweener.RunAsync(new FloatTween(vignette.opacity.value, opacity, duration, x => vignette.opacity.value = x), asyncToken, vignette);
             else vignette.opacity.value = opacity;
-        }
-        private void ChangeTexture(string imageId)
-        {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) vignette.mask.value = null;
-            else maskTextures.Select(t => t != null && t.name == imageId);
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE

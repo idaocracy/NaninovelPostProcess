@@ -54,7 +54,8 @@ namespace NaninovelPostProcess {
         {
             var tasks = new List<UniTask>();
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (chromaticAberration.spectralLut.value != null && chromaticAberration.spectralLut.value.name != spectralLut) ChangeTexture(spectralLut);
+            if (chromaticAberration.spectralLut.value != null && chromaticAberration.spectralLut.value.name != spectralLut) 
+                chromaticAberration.spectralLut.value = ChangeTexture(spectralLut);
             if (chromaticAberration.intensity.value != intensity) tasks.Add(ChangeIntensityAsync(intensity, duration, asyncToken));
 
             await UniTask.WhenAll(tasks);
@@ -76,12 +77,6 @@ namespace NaninovelPostProcess {
         {
             if (duration > 0) await intensityTweener.RunAsync(new FloatTween(chromaticAberration.intensity.value, Intensity, duration, x => chromaticAberration.intensity.value = x), asyncToken, chromaticAberration);
             else chromaticAberration.intensity.value = intensity;
-        }
-
-        private void ChangeTexture(string imageId)
-        {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) chromaticAberration.spectralLut.value = null;
-            else spectralLuts.Select(t => t != null && t.name == imageId);
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE

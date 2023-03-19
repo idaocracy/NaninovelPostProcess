@@ -47,7 +47,7 @@ namespace NaninovelPostProcess {
             var tasks = new List<UniTask>();
 
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
-            if (colorGrading.externalLut.value != null && colorGrading.externalLut.value.ToString() != lookUpTexture) ChangeTexture(lookUpTexture);
+            if (colorGrading.externalLut.value != null && colorGrading.externalLut.value.ToString() != lookUpTexture) colorGrading.externalLut.value = ChangeTexture(lookUpTexture);
             
             await UniTask.WhenAll(tasks);
         }
@@ -63,12 +63,6 @@ namespace NaninovelPostProcess {
             colorGrading = Volume.profile.GetSetting<UnityEngine.Rendering.PostProcessing.ColorGrading>() ?? Volume.profile.AddSettings<UnityEngine.Rendering.PostProcessing.ColorGrading>();
             colorGrading.SetAllOverridesTo(true);
             colorGrading.gradingMode.value = GradingMode.External;
-        }
-
-        private void ChangeTexture(string imageId)
-        {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) colorGrading.ldrLut.value = null;
-            else lookUpTextures.Select(t => t != null && t.name == imageId);
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE

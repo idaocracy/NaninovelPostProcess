@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
+using System;
 #if NANINOVEL_SCENE_ASSISTANT_AVAILABLE && UNITY_EDITOR
 using NaninovelSceneAssistant;
 #endif
@@ -102,6 +103,12 @@ namespace NaninovelPostProcess
         }
 
         protected abstract void CompleteTweens();
+
+        protected Texture ChangeTexture(string imageId)
+        {
+            if (imageId == "None" || String.IsNullOrEmpty(imageId)) return null;
+            else return Textures.FirstOrDefault(t => t.Key == imageId).Value;
+        }
     }
 }
 

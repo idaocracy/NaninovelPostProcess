@@ -91,7 +91,7 @@ namespace NaninovelPostProcess
             if (bloom.diffusion.value != diffusion) tasks.Add(ChangeDiffusionAsync(diffusion, duration, asyncToken));
             if (bloom.anamorphicRatio.value != anamorphicRatio) tasks.Add(ChangeAnamorphicRatioAsync(anamorphicRatio, duration, asyncToken));
             if (bloom.color.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
-            if (bloom.dirtTexture.value != null && bloom.dirtTexture.value.name != dirtTexture) ChangeTexture(dirtTexture);
+            if(bloom.dirtTexture.value.name != dirtTexture) bloom.dirtTexture.value = ChangeTexture(dirtTexture);
             if (bloom.dirtIntensity.value != dirtIntensity) tasks.Add(ChangeDirtIntensityAsync(dirtIntensity, duration, asyncToken));
             bloom.fastMode.value = FastMode;
 
@@ -157,11 +157,6 @@ namespace NaninovelPostProcess
         {
             if (duration > 0) await dirtIntensityTweener.RunAsync(new FloatTween(bloom.dirtIntensity.value, dirtIntensity, duration, x => bloom.dirtIntensity.value = x), asyncToken, bloom);
             else bloom.dirtIntensity.value = dirtIntensity;
-        }
-        private void ChangeTexture(string imageId)
-        {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) bloom.dirtTexture.value = null;
-            else dirtTextures.Select(t => t != null && t.name == imageId);
         }
         
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE

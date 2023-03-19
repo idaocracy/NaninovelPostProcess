@@ -132,7 +132,7 @@ namespace NaninovelPostProcess {
             if (Volume.weight != volumeWeight) tasks.Add(ChangeVolumeWeightAsync(volumeWeight, duration, asyncToken));
 
             if (colorGrading.ldrLutContribution.value != contribution) tasks.Add(ChangeContributionAsync(volumeWeight, duration, asyncToken));
-            if (colorGrading.ldrLut.value != null && colorGrading.ldrLut.value.name != lookUpTexture) ChangeTexture(lookUpTexture);
+            if (colorGrading.ldrLut.value != null && colorGrading.ldrLut.value?.name != lookUpTexture) colorGrading.ldrLut.value = ChangeTexture(lookUpTexture);
             if (colorGrading.temperature.value != temperature) tasks.Add(ChangeTemperatureAsync(temperature, duration, asyncToken));
             if (colorGrading.tint.value != tint) tasks.Add(ChangeTintAsync(tint, duration, asyncToken));
             if (colorGrading.colorFilter.value != colorFilter) tasks.Add(ChangeColorFilterAsync(colorFilter, duration, asyncToken));
@@ -246,12 +246,6 @@ namespace NaninovelPostProcess {
         {
             if (duration > 0) await gainTweener.RunAsync(new VectorTween(colorGrading.gain.value, gain, duration, x => colorGrading.gain.value = x), asyncToken, colorGrading);
             else colorGrading.gain.value = gain;
-        }
-
-        private void ChangeTexture(string imageId)
-        {
-            if (imageId == "None" || String.IsNullOrEmpty(imageId)) colorGrading.ldrLut.value = null;
-            else lookUpTextures.Select(t => t != null && t.name == imageId);
         }
 
         public Vector3 GetRedChannel() => new Vector3(colorGrading.mixerRedOutRedIn.value, colorGrading.mixerRedOutGreenIn.value, colorGrading.mixerRedOutBlueIn.value);
