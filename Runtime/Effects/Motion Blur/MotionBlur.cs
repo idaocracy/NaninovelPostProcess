@@ -26,7 +26,7 @@ namespace NaninovelPostProcess {
 
         [Header("Motion Blur Settings")]
         [SerializeField, Range(0f, 360f)] private float defaultShutterAngle = 270f;
-        [SerializeField, Range(4, 32)] private float defaultSampleCount = 10f;
+        [SerializeField, Range(4, 32)] private int defaultSampleCount = 10;
 
         private UnityEngine.Rendering.PostProcessing.MotionBlur motionBlur;
 
@@ -80,14 +80,14 @@ namespace NaninovelPostProcess {
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>
+            return new List<ICommandParameterData>
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("ShutterAngle", () => motionBlur.shutterAngle.value, v => motionBlur.shutterAngle.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 360f), false)},
-                { new ParameterValue("SampleCount", () => motionBlur.sampleCount.value, v => motionBlur.sampleCount.value = (int)v, (i,p) => i.IntSliderField(p, 0, 360), false)},
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<float>("ShutterAngle", () => motionBlur.shutterAngle.value, v => motionBlur.shutterAngle.value = v, (i,p) => i.FloatSliderField(p, 0f, 360f), defaultShutterAngle)},
+                { new CommandParameterData<int>("SampleCount", () => motionBlur.sampleCount.value, v => motionBlur.sampleCount.value = v, (i,p) => i.IntSliderField(p, 0, 360), defaultSampleCount)},
             };
         }
 #endif

@@ -2,7 +2,6 @@
 Postprocessing commands for use within Naninovel. Developed with Naninovel 1.17 & 1.18 and Post Processing 3.2.
 ![naninovelpostprocessgif](https://user-images.githubusercontent.com/77254066/190400417-c9261f8f-93e7-4a5b-a745-6a93733d2ebb.gif)
 
-
 **Please note that the extension won't work in projects that use URP or HDRP.**
 
 # Post Processing documentation 
@@ -14,6 +13,15 @@ Notice that the ColorGrading effect has been split into three different parts: H
 
 # Installation
 
+### New Version
+Installation 
+1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
+2. Type in https://github.com/Idaocracy/NaninovelPostProcess#package and it should install automatically. 
+3. Follow step 3 and onwards in the old installation instructions. 
+*Note: This version includes scripts which are only compatible with Naninovel 1.19. If you are using an older version, navigate to Runtime and delete the Commands folder.*
+
+
+### Old version 
 Check this video for a quick guide on installation and usage:
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/iAot5FwPO8w/0.jpg)](https://www.youtube.com/watch?v=iAot5FwPO8w)  

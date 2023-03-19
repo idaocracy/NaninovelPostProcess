@@ -54,10 +54,10 @@ namespace NaninovelPostProcess
         protected PostProcessVolume Volume;
 
         [Header("Spawn/Despawn settings")]
-        [SerializeField, UnityEngine.Min(0f)] private float defaultSpawnDuration = 0.35f;
-        [SerializeField, UnityEngine.Min(0f)] private float defaultDespawnDuration = 0.35f;
+        [SerializeField, UnityEngine.Min(0f)] protected float defaultSpawnDuration = 0.35f;
+        [SerializeField, UnityEngine.Min(0f)] protected float defaultDespawnDuration = 0.35f;
         [Header("Volume Settings")]
-        [SerializeField, Range(0f, 1f)] private float defaultVolumeWeight = 1f;
+        [SerializeField, Range(0f, 1f)] protected float defaultVolumeWeight = 1f;
 
         private void Initialize()
         {

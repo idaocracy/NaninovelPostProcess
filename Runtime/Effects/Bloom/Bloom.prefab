@@ -61,8 +61,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95b0e5f3647c24d41a2903c1475d8507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultDuration: 0.35
-  defaultFadeOutDuration: 0.312
+  defaultSpawnDuration: 0.35
+  defaultDespawnDuration: 0.35
   defaultVolumeWeight: 0.51
   defaultIntensity: 0
   defaultThreshold: 1
@@ -72,6 +72,7 @@ MonoBehaviour:
   defaultAnamorphicRatio: 0
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
   defaultFastMode: 0
-  defaultDirtTextureId: 
-  dirtTextures: []
+  defaultDirtTextureId: AreaTex
+  dirtTextures:
+  - {fileID: 2800000, guid: 73ec4ae984a0a0f44a2be737e41a6f2f, type: 3}
   defaultDirtIntensity: 0

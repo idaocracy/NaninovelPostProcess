@@ -22,8 +22,6 @@ namespace NaninovelPostProcess {
         protected string SpectralLut { get; private set; }
         protected float Intensity { get; private set; }
         protected bool FastMode { get; private set; }
-        public override bool IsTransformable => false;
-        public override string CommandId => "ChromaticAberration";
 
         private readonly Tweener<FloatTween> intensityTweener = new Tweener<FloatTween>();
 
@@ -87,15 +85,15 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>
+            return new List<ICommandParameterData>
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("SpectralLut", () => chromaticAberration.spectralLut.value, v => chromaticAberration.spectralLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false)},
-                { new ParameterValue("Intensity", () => chromaticAberration.intensity.value, v => chromaticAberration.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("FastMode", () => chromaticAberration.fastMode.value, v => chromaticAberration.fastMode.value = (bool)v, (i,p) => i.BoolField(p), false)},
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<Texture>("SpectralLut", () => chromaticAberration.spectralLut.value, v => chromaticAberration.spectralLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultSpectralLutId).Value)},
+                { new CommandParameterData<float>("Intensity", () => chromaticAberration.intensity.value, v => chromaticAberration.intensity.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultIntensity)},
+                { new CommandParameterData<bool>("FastMode", () => chromaticAberration.fastMode.value, v => chromaticAberration.fastMode.value = v, (i,p) => i.BoolField(p), defaultFastMode)},
             };
         }
 #endif

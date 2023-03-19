@@ -96,16 +96,16 @@ namespace NaninovelPostProcess
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>
+            return new List<ICommandParameterData>
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("Colored", () => grain.colored.value, v => grain.colored.value = (bool)v, (i,p) => i.BoolField(p), false)},
-                { new ParameterValue("Intensity", () => grain.intensity.value, v => grain.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
-                { new ParameterValue("Size", () => grain.size.value, v => grain.size.value = (float)v, (i,p) => i.FloatSliderField(p, 0.3f, 3f), false) },
-                { new ParameterValue("LuminanceContribution", () => grain.lumContrib.value, v => grain.lumContrib.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<bool>("Colored", () => grain.colored.value, v => grain.colored.value = v, (i,p) => i.BoolField(p), defaultColored)},
+                { new CommandParameterData<float>("Intensity", () => grain.intensity.value, v => grain.intensity.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultIntensity)},
+                { new CommandParameterData<float>("Size", () => grain.size.value, v => grain.size.value = v, (i,p) => i.FloatSliderField(p, 0.3f, 3f), defaultSize)},
+                { new CommandParameterData<float>("LuminanceContribution", () => grain.lumContrib.value, v => grain.lumContrib.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultluminanceContribution)},
             };
         }
 #endif

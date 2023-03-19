@@ -2,6 +2,7 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -134,20 +135,20 @@ namespace NaninovelPostProcess
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
-                { new ParameterValue("FilteringX", () => autoExposure.filtering.value.x, v => autoExposure.filtering.value.x = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("FilteringY", () => autoExposure.filtering.value.y, v => autoExposure.filtering.value.y = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Minimum", () => autoExposure.minLuminance.value, v => autoExposure.minLuminance.value = (float)v, (i,p) => i.FloatSliderField(p, -9f, 9f), false) },
-                { new ParameterValue("Maximum", () => autoExposure.maxLuminance.value, v => autoExposure.maxLuminance.value = (float)v, (i,p) => i.FloatSliderField(p, -9f, 9f), false) },
-                { new ParameterValue("ExposureCompensation", () => autoExposure.keyValue.value, v => autoExposure.keyValue.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("ProgressiveOrfixed", () => autoExposure.eyeAdaptation.value, v => autoExposure.eyeAdaptation.value = (EyeAdaptation)v, (i,p) => i.EnumField(p), false) },
-                { new ParameterValue("ProgressiveSpeedUp", () => autoExposure.speedUp.value, v => autoExposure.speedUp.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive) },
-                { new ParameterValue("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<float>("FilteringX", () => autoExposure.filtering.value.x, v => autoExposure.filtering.value.x = v, (i,p) => i.FloatField(p), defaultFiltering.x)},
+                { new CommandParameterData<float>("FilteringY", () => autoExposure.filtering.value.y, v => autoExposure.filtering.value.y = v, (i,p) => i.FloatField(p), defaultFiltering.y)},
+                { new CommandParameterData<float>("Minimum", () => autoExposure.minLuminance.value, v => autoExposure.minLuminance.value = v, (i,p) => i.FloatSliderField(p, -9f, 9f), defaultMinimum)},
+                { new CommandParameterData<float>("Maximum", () => autoExposure.maxLuminance.value, v => autoExposure.maxLuminance.value = v, (i,p) => i.FloatSliderField(p, -9f, 9f), defaultMaximum)},
+                { new CommandParameterData<float>("ExposureCompensation", () => autoExposure.keyValue.value, v => autoExposure.keyValue.value = v, (i,p) => i.FloatField(p), defaultExposureCompensation)},
+                { new CommandParameterData<Enum>("ProgressiveOrFixed", () => autoExposure.eyeAdaptation.value, v => autoExposure.eyeAdaptation.value = (EyeAdaptation)v, (i,p) => i.EnumField(p), defaultType)},
+                { new CommandParameterData<float>("ProgressiveSpeedUp", () => autoExposure.speedUp.value, v => autoExposure.speedUp.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedUp, getCondition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
+                { new CommandParameterData<float>("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedDown, getCondition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
             };
         }
 #endif

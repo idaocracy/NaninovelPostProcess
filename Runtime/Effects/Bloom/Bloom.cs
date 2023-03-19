@@ -166,23 +166,22 @@ namespace NaninovelPostProcess
         
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                //todo find out why image parameter throws an exception on generating command when null 
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
-                { new ParameterValue("Intensity", () => bloom.intensity.value, v => bloom.intensity.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), false) },
-                { new ParameterValue("Threshold", () => bloom.threshold.value, v => bloom.threshold.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), false) },
-                { new ParameterValue("SoftKnee", () => bloom.softKnee.value, v => bloom.softKnee.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
-                { new ParameterValue("Clamp", () => bloom.clamp.value, v => bloom.clamp.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Diffusion", () => bloom.diffusion.value, v => bloom.diffusion.value = (float)v, (i,p) => i.FloatSliderField(p, 1f, 10f), false) },
-                { new ParameterValue("AnamorphicRatio", () => bloom.anamorphicRatio.value, v => bloom.anamorphicRatio.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false) },
-                { new ParameterValue("Color", () => bloom.color.value, v => bloom.color.value = (Color)v, (i,p) => i.ColorField(p), false) },
-                { new ParameterValue("FastMode", () => bloom.fastMode.value, v => bloom.fastMode.value = (bool)v, (i,p) => i.BoolField(p), false) },
-                { new ParameterValue("DirtTexture", () => bloom.dirtTexture.value, v => bloom.dirtTexture.value = (Texture)v, (i,p) => i.TypeListField(p, Textures), false)},
-                { new ParameterValue("DirtIntensity", () => bloom.dirtIntensity.value, v => bloom.dirtIntensity.value = (float)v, (i,p) => i.FloatField(p), false) }
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<float>("Intensity", () => bloom.intensity.value, v => bloom.intensity.value = v, (i,p) => i.FloatField(p, min:0f), defaultIntensity)},
+                { new CommandParameterData<float>("Threshold", () => bloom.threshold.value, v => bloom.threshold.value = v, (i,p) => i.FloatField(p, min:0f), defaultThreshold)},
+                { new CommandParameterData<float>("SoftKnee", () => bloom.softKnee.value, v => bloom.softKnee.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultSoftKnee)},
+                { new CommandParameterData<float>("Clamp", () => bloom.clamp.value, v => bloom.clamp.value = v, (i,p) => i.FloatField(p), defaultClamp)},
+                { new CommandParameterData<float>("Diffusion", () => bloom.diffusion.value, v => bloom.diffusion.value = v, (i,p) => i.FloatSliderField(p, 1f, 10f), defaultDiffusion)},
+                { new CommandParameterData<float>("AnamorphicRatio", () => bloom.anamorphicRatio.value, v => bloom.anamorphicRatio.value = v, (i,p) => i.FloatSliderField(p, -1f, 1f), defaultAnamorphicRatio)},
+                { new CommandParameterData<Color>("Color", () => bloom.color.value, v => bloom.color.value = (Color)v, (i,p) => i.ColorField(p), defaultColor)},
+                { new CommandParameterData<bool>("FastMode", () => bloom.fastMode.value, v => bloom.fastMode.value = (bool)v, (i,p) => i.BoolField(p), defaultFastMode)},
+                { new CommandParameterData<Texture>("DirtTexture", () => bloom.dirtTexture.value, v => bloom.dirtTexture.value = (Texture)v, (i,p) => i.TypeListField(p, Textures), dirtTextures.FirstOrDefault(t => t.name == defaultDirtTextureId))},
+                { new CommandParameterData<float>("DirtIntensity", () => bloom.dirtIntensity.value, v => bloom.dirtIntensity.value = v, (i,p) => i.FloatField(p), defaultDirtIntensity)}
             };
         }
 

@@ -129,18 +129,18 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>
+            return new List<ICommandParameterData>
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p, 0), false)},
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("Intensity", () => lensDistortion.intensity.value, v => lensDistortion.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, -100f, 100f), false)},
-                { new ParameterValue("IntensityX", () => lensDistortion.intensityX.value, v => lensDistortion.intensityX.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("IntensityY", () => lensDistortion.intensityY.value, v => lensDistortion.intensityY.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false)},
-                { new ParameterValue("CenterX", () => lensDistortion.centerX.value, v => lensDistortion.centerX.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false)},
-                { new ParameterValue("CenterY", () => lensDistortion.centerY.value, v => lensDistortion.centerY.value = (float)v, (i,p) => i.FloatSliderField(p, -1f, 1f), false)},
-                { new ParameterValue("Scale", () => lensDistortion.scale.value, v => lensDistortion.scale.value = (float)v, (i,p) => i.FloatSliderField(p, 0.01f, 5f), false)},
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<float>("Intensity", () => lensDistortion.intensity.value, v => lensDistortion.intensity.value = v, (i,p) => i.FloatSliderField(p, -100f, 100f), defaultIntensity)},
+                { new CommandParameterData<float>("XMultiplier", () => lensDistortion.intensityX.value, v => lensDistortion.intensityX.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultXMultiplier)},
+                { new CommandParameterData<float>("YMultiplier", () => lensDistortion.intensityY.value, v => lensDistortion.intensityY.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultYMultiplier)},
+                { new CommandParameterData<float>("CenterX", () => lensDistortion.centerX.value, v => lensDistortion.centerX.value = v, (i,p) => i.FloatSliderField(p, -1f, 1f), defaultCenterX)},
+                { new CommandParameterData<float>("CenterY", () => lensDistortion.centerY.value, v => lensDistortion.centerY.value = v, (i,p) => i.FloatSliderField(p, -1f, 1f), defaultCenterY)},
+                { new CommandParameterData<float>("Scale", () => lensDistortion.scale.value, v => lensDistortion.scale.value = v, (i,p) => i.FloatSliderField(p, 0.01f, 5f), defaultScale)},
             };
         }
 #endif

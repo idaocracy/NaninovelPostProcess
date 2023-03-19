@@ -1,11 +1,15 @@
 {
-    "name": "com.idaocracy.naninovelpostprocess",
-    "version": "2.0.0",
-    "displayName": "Naninovel Post Process",
-    "description": "Transform Naninovel objects in real time and easily copy over their values to scenario scripts.",
-    "unity": "2019.4",
-    "author": {
-        "name": "Idaocracy",
-        "url": "https://github.com/Idaocracy"
-    }
+  "name": "com.idaocracy.naninovelpostprocess",
+  "version": "2.0.0",
+  "displayName": "Naninovel Post Process",
+  "description": "Commands for Unity's Post Processing effects. \nHighly recommend to be used together with my Scene Assistant extension.",
+  "unity": "2019.4",
+  "author": {
+    "name": "Idaocracy",
+    "url": "https://github.com/Idaocracy"
+  },
+  "dependencies": {
+    "com.unity.postprocessing": "3.2.2"
+  },
+  "hideInEditor": false
 }

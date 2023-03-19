@@ -166,23 +166,23 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), false) },
-                { new ParameterValue("ClassicOrMask", () => vignette.mode.value, v => vignette.mode.value = (VignetteMode)v, (i,p) => i.EnumField(p), false) },
-                { new ParameterValue("Color", () => vignette.color.value, v => vignette.color.value = (Color)v, (i,p) => i.ColorField(p), false) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<Enum>("ClassicOrMask", () => vignette.mode.value, v => vignette.mode.value = (VignetteMode)v, (i,p) => i.EnumField(p), defaultMode)},
+                { new CommandParameterData<Color>("Color", () => vignette.color.value, v => vignette.color.value = v, (i,p) => i.ColorField(p), defaultColor)},
 
-                { new ParameterValue("Center", () => vignette.center.value, v => vignette.center.value = (Vector2)v, (i,p) => i.Vector2Field(p), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Classic) },
-                { new ParameterValue("Intensity", () => vignette.intensity.value, v => vignette.intensity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Classic) },
-                { new ParameterValue("Smoothness", () => vignette.smoothness.value, v => vignette.smoothness.value = (float)v, (i,p) => i.FloatSliderField(p, 0.01f,1f), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Classic) },
-                { new ParameterValue("Roundness", () => vignette.roundness.value, v => vignette.roundness.value = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Classic) },
-                { new ParameterValue("Rounded", () => vignette.rounded.value, v => vignette.rounded.value = (bool)v, (i,p) => i.BoolField(p), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Classic) },
+                { new CommandParameterData<Vector2>("Center", () => vignette.center.value, v => vignette.center.value = v, (i,p) => i.Vector2Field(p),  defaultValue: defaultCenter, getCondition: () => vignette.mode.value == VignetteMode.Classic)},
+                { new CommandParameterData<float>("Intensity", () => vignette.intensity.value, v => vignette.intensity.value = v, (i,p) => i.FloatSliderField(p, 0f,1f),  defaultValue: defaultIntensity, getCondition: () => vignette.mode.value == VignetteMode.Classic)},
+                { new CommandParameterData<float>("Smoothness", () => vignette.smoothness.value, v => vignette.smoothness.value = v, (i,p) => i.FloatSliderField(p, 0.01f,1f), defaultValue: defaultSmoothness, getCondition: () => vignette.mode.value == VignetteMode.Classic)},
+                { new CommandParameterData<float>("Roundness", () => vignette.roundness.value, v => vignette.roundness.value = v, (i,p) => i.FloatSliderField(p, 0f,1f), defaultValue: defaultRoundness, getCondition: () => vignette.mode.value == VignetteMode.Classic)},
+                { new CommandParameterData<bool>("Rounded", () => vignette.rounded.value, v => vignette.rounded.value = (bool)v, (i,p) => i.BoolField(p), defaultValue: defaultRounded,  getCondition: () => vignette.mode.value == VignetteMode.Classic)},
                 
-                { new ParameterValue("MaskTexture", () => vignette.mask.value, v => vignette.mask.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Masked) },
-                { new ParameterValue("Opacity", () => vignette.opacity.value, v => vignette.opacity.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => vignette.mode.value == VignetteMode.Masked) },
+                { new CommandParameterData<Texture>("MaskTexture", () => vignette.mask.value, v => vignette.mask.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), defaultValue: Textures.FirstOrDefault(t => t.Key == defaultMask).Value,  getCondition: () => vignette.mode.value == VignetteMode.Masked)},
+                { new CommandParameterData<float>("Opacity", () => vignette.opacity.value, v => vignette.opacity.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultValue: defaultOpacity, getCondition: () => vignette.mode.value == VignetteMode.Masked)},
             };
         }
 #endif

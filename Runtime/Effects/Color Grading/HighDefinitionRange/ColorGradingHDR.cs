@@ -2,6 +2,7 @@
 
 #if UNITY_POST_PROCESSING_STACK_V2
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -376,33 +377,33 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
-                { new ParameterValue("TonemapperMode", () => colorGrading.tonemapper.value, v => colorGrading.tonemapper.value = (Tonemapper)v, (i,p) => i.EnumField(p), false) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<Enum>("TonemapperMode", () => colorGrading.tonemapper.value, v => colorGrading.tonemapper.value = (Tonemapper)v, (i,p) => i.EnumField(p), defaultTonemapperMode)},
                 
-                { new ParameterValue("ToeStrength", () => colorGrading.toneCurveToeStrength.value, v => colorGrading.toneCurveToeStrength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
-                { new ParameterValue("ToeLength", () => colorGrading.toneCurveToeLength.value, v => colorGrading.toneCurveToeLength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
-                { new ParameterValue("ShoulderStrength", () => colorGrading.toneCurveShoulderStrength.value, v => colorGrading.toneCurveShoulderStrength.value = (float)v, (i,p) => i.FloatSliderField(p, 0f, 1f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
-                { new ParameterValue("ShoulderLength", () => colorGrading.toneCurveShoulderLength.value, v => colorGrading.toneCurveShoulderLength.value = (float)v, (i,p) => i.FloatField(p, minValue:0f), isParameter:false, condition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
-                { new ParameterValue("ShoulderAngle", () => colorGrading.toneCurveShoulderAngle.value, v => colorGrading.toneCurveShoulderAngle.value = (float)v, (i,p) => i.FloatField(p, 0.01f), isParameter:false, condition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new CommandParameterData<float>("ToeStrength", () => colorGrading.toneCurveToeStrength.value, v => colorGrading.toneCurveToeStrength.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultValue:defaultToeStrength, getCondition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new CommandParameterData<float>("ToeLength", () => colorGrading.toneCurveToeLength.value, v => colorGrading.toneCurveToeLength.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultValue:defaultToeLength, getCondition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new CommandParameterData<float>("ShoulderStrength", () => colorGrading.toneCurveShoulderStrength.value, v => colorGrading.toneCurveShoulderStrength.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultValue:defaultShoulderStrength, getCondition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new CommandParameterData<float>("ShoulderLength", () => colorGrading.toneCurveShoulderLength.value, v => colorGrading.toneCurveShoulderLength.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue:defaultShoulderLength, getCondition:() => colorGrading.tonemapper.value == Tonemapper.Custom) },
+                { new CommandParameterData<float>("ShoulderAngle", () => colorGrading.toneCurveShoulderAngle.value, v => colorGrading.toneCurveShoulderAngle.value = v, (i,p) => i.FloatField(p, 0.01f), defaultValue:defaultShoulderAngle, getCondition: () => colorGrading.tonemapper.value == Tonemapper.Custom) },
 
-                { new ParameterValue("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("PostExposure", () => colorGrading.postExposure.value, v => colorGrading.postExposure.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p), false) },
-                { new ParameterValue("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("RedChannel", () => GetRedChannel(), v => ApplyRedChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("GreenChannel", () => GetGreenChannel(), v => ApplyGreenChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("BlueChannel", () => GetBlueChannel(), v => ApplyBlueChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("Lift", () => colorGrading.lift.value, v => colorGrading.lift.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
-                { new ParameterValue("Gamma", () => colorGrading.gamma.value, v => colorGrading.gamma.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
-                { new ParameterValue("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
+                { new CommandParameterData<float>("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = v, (i,p) => i.FloatField(p), defaultTemperature)},
+                { new CommandParameterData<float>("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = v, (i,p) => i.FloatField(p), defaultTint)},
+                { new CommandParameterData<float>("PostExposure", () => colorGrading.postExposure.value, v => colorGrading.postExposure.value = v, (i,p) => i.FloatField(p), defaultPostExposure)},
+                { new CommandParameterData<Color>("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p), defaultColorFilter)},
+                { new CommandParameterData<float>("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = v, (i,p) => i.FloatField(p), defaultHueShift)},
+                { new CommandParameterData<float>("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = v, (i,p) => i.FloatField(p), defaultSaturation)},
+                { new CommandParameterData<float>("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = v, (i,p) => i.FloatField(p), defaultContrast)},
+                { new CommandParameterData<Vector3>("RedChannel", () => GetRedChannel(), v => ApplyRedChannel(v), (i,p) => i.Vector3Field(p), defaultRedChannel)},
+                { new CommandParameterData<Vector3>("GreenChannel", () => GetGreenChannel(), v => ApplyGreenChannel(v), (i,p) => i.Vector3Field(p), defaultGreenChannel)},
+                { new CommandParameterData<Vector3>("BlueChannel", () => GetBlueChannel(), v => ApplyBlueChannel(v), (i,p) => i.Vector3Field(p), defaultBlueChannel)},
+                { new CommandParameterData<Vector4>("Lift", () => colorGrading.lift.value, v => colorGrading.lift.value = v, (i,p) => i.Vector4Field(p), defaultLift)},
+                { new CommandParameterData<Vector4>("Gamma", () => colorGrading.gamma.value, v => colorGrading.gamma.value = v, (i,p) => i.Vector4Field(p), defaultGamma)},
+                { new CommandParameterData<Vector4>("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = v, (i,p) => i.Vector4Field(p), defaultGain)},
             };
         }
 #endif

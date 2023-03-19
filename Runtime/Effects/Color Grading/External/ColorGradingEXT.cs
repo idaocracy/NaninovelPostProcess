@@ -72,13 +72,13 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
-                { new ParameterValue("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value) }
             };
         }
 #endif

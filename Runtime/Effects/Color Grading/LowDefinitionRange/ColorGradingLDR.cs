@@ -281,27 +281,27 @@ namespace NaninovelPostProcess {
         }
 
 #if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
-        public override List<ParameterValue> GetParams()
+        public override List<ICommandParameterData> GetParams()
         {
-            return new List<ParameterValue>()
+            return new List<ICommandParameterData>()
             {
-                { new ParameterValue("Time", () => Duration, v => Duration = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Weight", () => Volume.weight, v => Volume.weight = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
-                { new ParameterValue("LookUpTexture", () => colorGrading.ldrLut.value, v => colorGrading.ldrLut.value = (Texture)v, (i,p) => i.TypeListField<Texture>(p, Textures), false) },
-                { new ParameterValue("Contribution", () => colorGrading.ldrLutContribution.value, v => colorGrading.ldrLutContribution.value = (float)v, (i,p) => i.FloatSliderField(p, 0f,1f), false) },
-                { new ParameterValue("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p), false) },
-                { new ParameterValue("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Brightness", () => colorGrading.brightness.value, v => colorGrading.brightness.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = (float)v, (i,p) => i.FloatField(p), false) },
-                { new ParameterValue("RedChannel", () => GetRedChannel(), v => ApplyRedChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("GreenChannel", () => GetGreenChannel(), v => ApplyGreenChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("BlueChannel", () => GetBlueChannel(), v => ApplyBlueChannel((Vector3)v), (i,p) => i.Vector3Field(p), false) },
-                { new ParameterValue("Lift", () => colorGrading.lift.value, v => colorGrading.lift.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
-                { new ParameterValue("Gamma", () => colorGrading.gamma.value, v => colorGrading.gamma.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
-                { new ParameterValue("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = (Vector4)v, (i,p) => i.Vector4Field(p), false) },
+                { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
+                { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
+                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.ldrLut.value, v => colorGrading.ldrLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value)},
+                { new CommandParameterData<float>("Contribution", () => colorGrading.ldrLutContribution.value, v => colorGrading.ldrLutContribution.value = v, (i,p) => i.FloatSliderField(p, 0f,1f), defaultContribution)},
+                { new CommandParameterData<float>("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = v, (i,p) => i.FloatField(p), defaultTemperature)},
+                { new CommandParameterData<float>("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = v, (i,p) => i.FloatField(p), defaultTint)},
+                { new CommandParameterData<Color>("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = v, (i,p) => i.ColorField(p), defaultColorFilter)},
+                { new CommandParameterData<float>("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = v, (i,p) => i.FloatField(p), defaultHueShift)},
+                { new CommandParameterData<float>("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = v, (i,p) => i.FloatField(p), defaultSaturation)},
+                { new CommandParameterData<float>("Brightness", () => colorGrading.brightness.value, v => colorGrading.brightness.value = v, (i,p) => i.FloatField(p), defaultBrightness)},
+                { new CommandParameterData<float>("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = v, (i,p) => i.FloatField(p), defaultContrast)},
+                { new CommandParameterData<Vector3>("RedChannel", () => GetRedChannel(), v => ApplyRedChannel(v), (i,p) => i.Vector3Field(p), defaultRedChannel)},
+                { new CommandParameterData<Vector3>("GreenChannel", () => GetGreenChannel(), v => ApplyGreenChannel(v), (i,p) => i.Vector3Field(p), defaultGreenChannel)},
+                { new CommandParameterData<Vector3>("BlueChannel", () => GetBlueChannel(), v => ApplyBlueChannel(v), (i,p) => i.Vector3Field(p), defaultBlueChannel)},
+                { new CommandParameterData<Vector4>("Lift", () => colorGrading.lift.value, v => colorGrading.lift.value = v, (i,p) => i.Vector4Field(p), defaultLift)},
+                { new CommandParameterData<Vector4>("Gamma", () => colorGrading.gamma.value, v => colorGrading.gamma.value = v, (i,p) => i.Vector4Field(p), defaultGamma)},
+                { new CommandParameterData<Vector4>("Gain", () => colorGrading.gain.value, v => colorGrading.gain.value = v, (i,p) => i.Vector4Field(p), defaultGain)},
             };
         }
 #endif
