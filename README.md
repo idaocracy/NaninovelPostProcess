@@ -36,7 +36,7 @@ Check this video for a quick guide on installation and usage:
 #### 4. If "Add Post Processing Layer to Camera" is enabled, you need to add a PostProcessResources asset. You can find the built-in one by searching PostProcessResources with the All filter.
 ![image](https://user-images.githubusercontent.com/77254066/189537431-001c919f-b9f6-4041-9342-c335d04453cf.png)
 
-#### 5. Add the included prefabs to the list of Spawn resources. You are free to name them however you want. 
+#### 5. Add the included prefabs to the list of Spawn resources. You are free to name them however you want. (Note that in the new version (V2) the extension folder is located under the Packages folder)
 ![image](https://user-images.githubusercontent.com/77254066/189537667-f873dccb-e740-4427-8931-08fc4e2dd4cf.png)
 
 #### 6. Use my other extension, NaninovelSceneAssistant, or special editor tools in the spawn object inspector to modify the effect and copy the values over to the clipboard
