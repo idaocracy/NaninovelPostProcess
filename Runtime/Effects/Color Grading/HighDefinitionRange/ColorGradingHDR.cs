@@ -394,7 +394,7 @@ namespace NaninovelPostProcess {
                 { new CommandParameterData<float>("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = v, (i,p) => i.FloatField(p), defaultTemperature)},
                 { new CommandParameterData<float>("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = v, (i,p) => i.FloatField(p), defaultTint)},
                 { new CommandParameterData<float>("PostExposure", () => colorGrading.postExposure.value, v => colorGrading.postExposure.value = v, (i,p) => i.FloatField(p), defaultPostExposure)},
-                { new CommandParameterData<Color>("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p), defaultColorFilter)},
+                { new CommandParameterData<Color>("ColorFilter", () => colorGrading.colorFilter.value, v => colorGrading.colorFilter.value = (Color)v, (i,p) => i.ColorField(p, includeHDR:true), defaultColorFilter)},
                 { new CommandParameterData<float>("HueShift", () => colorGrading.hueShift.value, v => colorGrading.hueShift.value = v, (i,p) => i.FloatField(p), defaultHueShift)},
                 { new CommandParameterData<float>("Saturation", () => colorGrading.saturation.value, v => colorGrading.saturation.value = v, (i,p) => i.FloatField(p), defaultSaturation)},
                 { new CommandParameterData<float>("Contrast", () => colorGrading.contrast.value, v => colorGrading.contrast.value = v, (i,p) => i.FloatField(p), defaultContrast)},
