@@ -17,8 +17,9 @@ Notice that the ColorGrading effect has been split into three different parts: H
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
 2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. 
-3. Follow step 3 and onwards in the old installation instructions. 
+3. Follow step 3 and onwards in the old installation instructions.
 
+**NOTE**: In case you want to make changes to the default settings of an effect prefab, make a copy of it and assign it to the Spawn resources instead.
 
 ### Old version (V1)
 Check this video for a quick guide on installation and usage:
