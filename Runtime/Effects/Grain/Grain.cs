@@ -9,8 +9,10 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
+#endif
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -95,7 +97,7 @@ namespace NaninovelPostProcess
             else grain.lumContrib.value = luminanceContribution;
         }
 
-#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ICommandParameterData> GetParams()
         {
             return new List<ICommandParameterData>

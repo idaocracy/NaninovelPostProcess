@@ -8,8 +8,10 @@ using UnityEngine;
 using UnityEngine.Rendering.PostProcessing;
 using Naninovel;
 using Naninovel.Commands;
-#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 using NaninovelSceneAssistant;
+#endif
+#if UNITY_EDITOR
 using UnityEditor;
 #endif
 
@@ -79,7 +81,7 @@ namespace NaninovelPostProcess {
             if (duration > 0) await sampleCountTweener.RunAsync(new FloatTween((int)motionBlur.sampleCount.value, sampleCount, duration, x => motionBlur.sampleCount.value = (int)x), asyncToken, motionBlur);
             else motionBlur.sampleCount.value = (int)sampleCount;
         }
-#if UNITY_EDITOR && NANINOVEL_SCENE_ASSISTANT_AVAILABLE
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
         public override List<ICommandParameterData> GetParams()
         {
             return new List<ICommandParameterData>

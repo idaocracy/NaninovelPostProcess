@@ -8,13 +8,13 @@ using System.Linq;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
 using System;
-#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE && UNITY_EDITOR
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE 
 using NaninovelSceneAssistant;
 #endif
 
 namespace NaninovelPostProcess
 {
-#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE && UNITY_EDITOR
+#if NANINOVEL_SCENE_ASSISTANT_AVAILABLE
 
     public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
     {
