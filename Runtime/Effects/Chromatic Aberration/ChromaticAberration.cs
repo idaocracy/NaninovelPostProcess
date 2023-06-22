@@ -85,7 +85,7 @@ namespace NaninovelPostProcess {
             {
                 { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
                 { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
-                { new CommandParameterData<Texture>("SpectralLut", () => chromaticAberration.spectralLut.value, v => chromaticAberration.spectralLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultSpectralLutId).Value)},
+                { new CommandParameterData<Texture>("SpectralLut", () => chromaticAberration.spectralLut.value, v => chromaticAberration.spectralLut.value = v, (i,p) => i.TypeDropdownField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultSpectralLutId).Value)},
                 { new CommandParameterData<float>("Intensity", () => chromaticAberration.intensity.value, v => chromaticAberration.intensity.value = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultIntensity)},
                 { new CommandParameterData<bool>("FastMode", () => chromaticAberration.fastMode.value, v => chromaticAberration.fastMode.value = v, (i,p) => i.BoolField(p), defaultFastMode)},
             };

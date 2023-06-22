@@ -175,7 +175,7 @@ namespace NaninovelPostProcess
                 { new CommandParameterData<float>("AnamorphicRatio", () => bloom.anamorphicRatio.value, v => bloom.anamorphicRatio.value = v, (i,p) => i.FloatSliderField(p, -1f, 1f), defaultAnamorphicRatio)},
                 { new CommandParameterData<Color>("Color", () => bloom.color.value, v => bloom.color.value = (Color)v, (i,p) => i.ColorField(p), defaultColor)},
                 { new CommandParameterData<bool>("FastMode", () => bloom.fastMode.value, v => bloom.fastMode.value = (bool)v, (i,p) => i.BoolField(p), defaultFastMode)},
-                { new CommandParameterData<Texture>("DirtTexture", () => bloom.dirtTexture.value, v => bloom.dirtTexture.value = (Texture)v, (i,p) => i.TypeListField(p, Textures), dirtTextures.FirstOrDefault(t => t.name == defaultDirtTextureId))},
+                { new CommandParameterData<Texture>("DirtTexture", () => bloom.dirtTexture.value, v => bloom.dirtTexture.value = (Texture)v, (i,p) => i.TypeDropdownField(p, Textures), dirtTextures.FirstOrDefault(t => t.name == defaultDirtTextureId))},
                 { new CommandParameterData<float>("DirtIntensity", () => bloom.dirtIntensity.value, v => bloom.dirtIntensity.value = v, (i,p) => i.FloatField(p), defaultDirtIntensity)}
             };
         }

@@ -281,7 +281,7 @@ namespace NaninovelPostProcess {
             {
                 { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
                 { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
-                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.ldrLut.value, v => colorGrading.ldrLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value)},
+                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.ldrLut.value, v => colorGrading.ldrLut.value = v, (i,p) => i.TypeDropdownField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value)},
                 { new CommandParameterData<float>("Contribution", () => colorGrading.ldrLutContribution.value, v => colorGrading.ldrLutContribution.value = v, (i,p) => i.FloatSliderField(p, 0f,1f), defaultContribution)},
                 { new CommandParameterData<float>("Temperature", () => colorGrading.temperature.value, v => colorGrading.temperature.value = v, (i,p) => i.FloatField(p), defaultTemperature)},
                 { new CommandParameterData<float>("Tint", () => colorGrading.tint.value, v => colorGrading.tint.value = v, (i,p) => i.FloatField(p), defaultTint)},

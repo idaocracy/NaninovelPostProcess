@@ -104,7 +104,7 @@ namespace NaninovelPostProcess {
                 { new CommandParameterData<float>("FocusDistance", () => dof.focusDistance.value, v => dof.focusDistance.value = v, (i,p) => i.FloatField(p, 0.1f), defaultFocusDistance)},
                 { new CommandParameterData<float>("Aperture", () => dof.aperture.value, v => dof.aperture.value = v, (i,p) => i.FloatSliderField(p, 0.1f, 32f), defaultAperture)},
                 { new CommandParameterData<float>("FocalLength", () => dof.focalLength.value, v => dof.focalLength.value = v, (i,p) => i.FloatSliderField(p, 1f, 300f), defaultFocalLength)},
-                { new CommandParameterData<Enum>("MaxBlurSize", () => dof.kernelSize.value, v => dof.kernelSize.value = (KernelSize)v, (i,p) => i.EnumField(p), defaultMaxBlurSize)},
+                { new CommandParameterData<Enum>("MaxBlurSize", () => dof.kernelSize.value, v => dof.kernelSize.value = (KernelSize)v, (i,p) => i.EnumDropdownField(p), defaultMaxBlurSize)},
             };
         }
 #endif

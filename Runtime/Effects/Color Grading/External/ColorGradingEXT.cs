@@ -72,7 +72,7 @@ namespace NaninovelPostProcess {
             {
                 { new CommandParameterData<float>("Time", () => Duration, v => Duration = v, (i,p) => i.FloatField(p), defaultSpawnDuration)},
                 { new CommandParameterData<float>("Weight", () => Volume.weight, v => Volume.weight = v, (i,p) => i.FloatSliderField(p, 0f, 1f), defaultVolumeWeight)},
-                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = v, (i,p) => i.TypeListField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value) }
+                { new CommandParameterData<Texture>("LookUpTexture", () => colorGrading.externalLut.value, v => colorGrading.externalLut.value = v, (i,p) => i.TypeDropdownField<Texture>(p, Textures), Textures.FirstOrDefault(t => t.Key == defaultLookUpTexture).Value) }
             };
         }
 #endif

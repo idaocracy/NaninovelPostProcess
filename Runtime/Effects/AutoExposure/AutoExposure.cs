@@ -146,9 +146,9 @@ namespace NaninovelPostProcess
                 { new CommandParameterData<float>("Minimum", () => autoExposure.minLuminance.value, v => autoExposure.minLuminance.value = v, (i,p) => i.FloatSliderField(p, -9f, 9f), defaultMinimum)},
                 { new CommandParameterData<float>("Maximum", () => autoExposure.maxLuminance.value, v => autoExposure.maxLuminance.value = v, (i,p) => i.FloatSliderField(p, -9f, 9f), defaultMaximum)},
                 { new CommandParameterData<float>("ExposureCompensation", () => autoExposure.keyValue.value, v => autoExposure.keyValue.value = v, (i,p) => i.FloatField(p), defaultExposureCompensation)},
-                { new CommandParameterData<Enum>("ProgressiveOrFixed", () => autoExposure.eyeAdaptation.value, v => autoExposure.eyeAdaptation.value = (EyeAdaptation)v, (i,p) => i.EnumField(p), defaultType)},
-                { new CommandParameterData<float>("ProgressiveSpeedUp", () => autoExposure.speedUp.value, v => autoExposure.speedUp.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedUp, getCondition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
-                { new CommandParameterData<float>("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedDown, getCondition: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
+                { new CommandParameterData<Enum>("ProgressiveOrFixed", () => autoExposure.eyeAdaptation.value, v => autoExposure.eyeAdaptation.value = (EyeAdaptation)v, (i,p) => i.EnumDropdownField(p), defaultType)},
+                { new CommandParameterData<float>("ProgressiveSpeedUp", () => autoExposure.speedUp.value, v => autoExposure.speedUp.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedUp, conditions: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
+                { new CommandParameterData<float>("ProgressiveSpeedDown", () => autoExposure.speedDown.value, v => autoExposure.speedDown.value = v, (i,p) => i.FloatField(p, min:0f), defaultValue: defaultSpeedDown, conditions: () => autoExposure.eyeAdaptation.value == EyeAdaptation.Progressive)},
             };
         }
 #endif
