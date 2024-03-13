@@ -19,6 +19,7 @@ namespace NaninovelPostProcess
     public abstract class PostProcessSpawnObject : SceneAssistantSpawnObject
     {
         public override bool IsTransformable => false;
+        public override bool IsSpawnEffect => true;
         public override string CommandId => this.name;
 
         protected override void Awake()
