@@ -70,7 +70,7 @@ MonoBehaviour:
   defaultIntensity: 0
   defaultSmoothness: 0.2
   defaultRoundness: 1
-  defaultRounded: 1
+  defaultRounded: 0
   defaultMask: 
   maskTextures: []
   defaultOpacity: 1
