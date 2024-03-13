@@ -1,8 +1,8 @@
-﻿using Naninovel.Commands;
+﻿using Naninovel;
+using Naninovel.Commands;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Naninovel.PostProcess
+namespace NaninovelPostProcess
 {
     [CommandAlias("ColorGradingHDR")]
     public class SpawnColorGradingHDR : SpawnEffect

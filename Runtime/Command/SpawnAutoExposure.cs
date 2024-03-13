@@ -1,7 +1,8 @@
-﻿using Naninovel.Commands;
+﻿using Naninovel;
+using Naninovel.Commands;
 using System.Collections.Generic;
 
-namespace Naninovel.PostProcess
+namespace NaninovelPostProcess
 {
     [CommandAlias("AutoExposure")]
     public class SpawnAutoExposure : SpawnEffect
