@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("MotionBlur")]
-    public class SpawnMotionBlur : SpawnEffect
+    public class SpawnMotionBlur : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -13,8 +13,8 @@ namespace NaninovelPostProcess
         public DecimalParameter ShutterAngle;
         public DecimalParameter SampleCount;
 
-        protected override string Path => "MotionBlur";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
+        protected override string PostProcessName => "MotionBlur";
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {
             ToSpawnParam(FadeDuration),

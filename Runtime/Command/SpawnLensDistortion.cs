@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("LensDistortion")]
-    public class SpawnLensDistortion : SpawnEffect
+    public class SpawnLensDistortion : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -17,7 +17,7 @@ namespace NaninovelPostProcess
         public DecimalParameter CenterY;
         public DecimalParameter Scale;
 
-        protected override string Path => "LensDistortion";
+        protected override string PostProcessName => "LensDistortion";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {

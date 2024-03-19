@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("Grain")]
-    public class SpawnGrain : SpawnEffect
+    public class SpawnGrain : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -14,10 +14,8 @@ namespace NaninovelPostProcess
         public DecimalParameter Intensity;
         public DecimalParameter Size;
         public DecimalParameter LuminanceContribution;
-
-        protected override string Path => "Grain";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
-
+        protected override string PostProcessName => "Grain";
         protected override StringListParameter GetSpawnParameters() => new List<string> {
             ToSpawnParam(FadeDuration),
             ToSpawnParam(Weight),

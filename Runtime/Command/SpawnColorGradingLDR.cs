@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("ColorGradingLDR")]
-    public class SpawnColorGradingLDR : SpawnEffect
+    public class SpawnColorGradingLDR : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -27,9 +27,8 @@ namespace NaninovelPostProcess
         public DecimalListParameter Gamma;
         public DecimalListParameter Gain;
 
-        protected override string Path => "ColorGradingLDR";
+        protected override string PostProcessName => "ColorGradingLDR";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
-
         protected override StringListParameter GetSpawnParameters()
         {
             var list = new List<string> {

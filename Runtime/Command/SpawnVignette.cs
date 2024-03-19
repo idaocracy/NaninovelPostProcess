@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("Vignette")]
-    public class SpawnVignette : SpawnEffect
+    public class SpawnVignette : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -24,9 +24,8 @@ namespace NaninovelPostProcess
         //Mask parameters
         public StringParameter MaskTexture;
         public StringParameter MaskOpacity;
-
-        protected override string Path => "Vignette";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
+        protected override string PostProcessName => "Vignette";
 
         protected override StringListParameter GetSpawnParameters() => 
             new List<string> {

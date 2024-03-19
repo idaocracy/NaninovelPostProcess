@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("AutoExposure")]
-    public class SpawnAutoExposure : SpawnEffect
+    public class SpawnAutoExposure : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -19,7 +19,7 @@ namespace NaninovelPostProcess
         public DecimalParameter ProgressiveSpeedUp;
         public DecimalParameter ProgressiveSpeedDown;
 
-        protected override string Path => "AutoExposure";
+        protected override string PostProcessName => "AutoExposure";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {

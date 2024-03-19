@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("DepthOfField")]
-    public class SpawnDepthOfField : SpawnEffect
+    public class SpawnDepthOfField : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -15,7 +15,7 @@ namespace NaninovelPostProcess
         public DecimalParameter FocalLength;
         public StringParameter MaxBlurSize;
 
-        protected override string Path => "DoF";
+        protected override string PostProcessName => "DoF";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {
