@@ -54,6 +54,9 @@ namespace NaninovelPostProcess
         private PostProcessingConfiguration postProcessingConfiguration;
         protected PostProcessVolume Volume;
 
+        [SerializeField] private bool ignoreTimescale;
+        protected bool IgnoreTimescale => ignoreTimescale;
+
         [Header("Spawn/Despawn settings")]
         [SerializeField, UnityEngine.Min(0f)] protected float defaultSpawnDuration = 0.35f;
         [SerializeField, UnityEngine.Min(0f)] protected float defaultDespawnDuration = 0.35f;
@@ -87,7 +90,7 @@ namespace NaninovelPostProcess
 
         protected async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x), asyncToken, Volume);
+            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x, IgnoreTimescale), asyncToken, Volume);
             else Volume.weight = volumeWeight;
         }
 

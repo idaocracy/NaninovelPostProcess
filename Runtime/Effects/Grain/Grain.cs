@@ -83,17 +83,17 @@ namespace NaninovelPostProcess
 
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await intensityTweener.RunAsync(new FloatTween(grain.intensity.value, intensity, duration, x => grain.intensity.value = x), asyncToken, grain);
+            if (duration > 0) await intensityTweener.RunAsync(new FloatTween(grain.intensity.value, intensity, duration, x => grain.intensity.value = x, IgnoreTimescale), asyncToken, grain);
             else grain.intensity.value = intensity;
         }
         private async UniTask ChangeSizeAsync(float size, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await sizeTweener.RunAsync(new FloatTween(grain.size.value, size, duration, x => grain.size.value = x), asyncToken, grain);
+            if (duration > 0) await sizeTweener.RunAsync(new FloatTween(grain.size.value, size, duration, x => grain.size.value = x, IgnoreTimescale), asyncToken, grain);
             else grain.size.value = size;
         }
         private async UniTask ChangeLuminanceContributionAsync(float luminanceContribution, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await luminanceContributionTweener.RunAsync(new FloatTween(grain.lumContrib.value, luminanceContribution, duration, x => grain.lumContrib.value = x), asyncToken, grain);
+            if (duration > 0) await luminanceContributionTweener.RunAsync(new FloatTween(grain.lumContrib.value, luminanceContribution, duration, x => grain.lumContrib.value = x, IgnoreTimescale), asyncToken, grain);
             else grain.lumContrib.value = luminanceContribution;
         }
 

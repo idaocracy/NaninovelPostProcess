@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace NaninovelPostProcess
 {
     [CommandAlias("bloom")]
-    public class SpawnBloom : SpawnEffect
+    public class SpawnBloom : SpawnPostProcessing
     {
         [ParameterAlias("time")]
         public DecimalParameter FadeDuration;
@@ -21,7 +21,7 @@ namespace NaninovelPostProcess
         public StringParameter DirtTexture;
         public BooleanParameter DirtIntensity;
 
-        protected override string Path => $"Bloom";
+        protected override string PostProcessName => "MotionBlur";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {

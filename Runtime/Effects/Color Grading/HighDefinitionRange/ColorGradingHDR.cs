@@ -258,67 +258,67 @@ namespace NaninovelPostProcess {
 
         private async UniTask ChangeToeStrengthAsync(float toeStrength, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await toeStrengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveToeStrength.value, toeStrength, duration, x => colorGrading.toneCurveToeStrength.value = x), asyncToken, colorGrading);
+            if (duration > 0) await toeStrengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveToeStrength.value, toeStrength, duration, x => colorGrading.toneCurveToeStrength.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveToeStrength.value = toeStrength;
         }
         private async UniTask ChangeToeLengthAsync(float toeLength, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await toeLengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveToeLength.value, toeLength, duration, x => colorGrading.toneCurveToeLength.value = x), asyncToken, colorGrading);
+            if (duration > 0) await toeLengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveToeLength.value, toeLength, duration, x => colorGrading.toneCurveToeLength.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveToeLength.value = toeLength;
         }
         private async UniTask ChangeShoulderStrengthAsync(float shoulderStrength, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await shoulderStrengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderStrength.value, shoulderStrength, duration, x => colorGrading.toneCurveShoulderStrength.value = x), asyncToken, colorGrading);
+            if (duration > 0) await shoulderStrengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderStrength.value, shoulderStrength, duration, x => colorGrading.toneCurveShoulderStrength.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveShoulderStrength.value = shoulderStrength;
         }
         private async UniTask ChangeShoulderLengthAsync(float shoulderLength, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await shoulderLengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderLength.value, shoulderLength, duration, x => colorGrading.toneCurveShoulderLength.value = x), asyncToken, colorGrading);
+            if (duration > 0) await shoulderLengthTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderLength.value, shoulderLength, duration, x => colorGrading.toneCurveShoulderLength.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveShoulderLength.value = shoulderLength;
         }
         private async UniTask ChangeShoulderAngleAsync(float shoulderAngle, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await shoulderAngleTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderAngle.value, shoulderAngle, duration, x => colorGrading.toneCurveShoulderAngle.value = x), asyncToken, colorGrading);
+            if (duration > 0) await shoulderAngleTweener.RunAsync(new FloatTween(colorGrading.toneCurveShoulderAngle.value, shoulderAngle, duration, x => colorGrading.toneCurveShoulderAngle.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveShoulderAngle.value = shoulderAngle;
         }
         private async UniTask ChangeToneGammaAsync(float toneGamma, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await toneGammaTweener.RunAsync(new FloatTween(colorGrading.toneCurveGamma.value, toneGamma, duration, x => colorGrading.toneCurveGamma.value = x), asyncToken, colorGrading);
+            if (duration > 0) await toneGammaTweener.RunAsync(new FloatTween(colorGrading.toneCurveGamma.value, toneGamma, duration, x => colorGrading.toneCurveGamma.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.toneCurveGamma.value = toneGamma;
         }
         private async UniTask ChangeTemperatureAsync(float temperature, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await temperatureTweener.RunAsync(new FloatTween(colorGrading.temperature.value, temperature, duration, x => colorGrading.temperature.value = x), asyncToken, colorGrading);
+            if (duration > 0) await temperatureTweener.RunAsync(new FloatTween(colorGrading.temperature.value, temperature, duration, x => colorGrading.temperature.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.temperature.value = temperature;
         }
         private async UniTask ChangeTintAsync(float tint, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await tintTweener.RunAsync(new FloatTween(colorGrading.tint.value, tint, duration, x => colorGrading.tint.value = x), asyncToken, colorGrading);
+            if (duration > 0) await tintTweener.RunAsync(new FloatTween(colorGrading.tint.value, tint, duration, x => colorGrading.tint.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.tint.value = tint;
         }
         private async UniTask ChangePostExposureAsync(float postExposure, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await postExposureTweener.RunAsync(new FloatTween(colorGrading.postExposure.value, postExposure, duration, x => colorGrading.postExposure.value = x), asyncToken, colorGrading);
+            if (duration > 0) await postExposureTweener.RunAsync(new FloatTween(colorGrading.postExposure.value, postExposure, duration, x => colorGrading.postExposure.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.postExposure.value = postExposure;
         }
         private async UniTask ChangeColorFilterAsync(Color colorFilter, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await colorFilterTweener.RunAsync(new ColorTween(colorGrading.colorFilter.value, colorFilter, ColorTweenMode.All, duration, x => colorGrading.colorFilter.value = x), asyncToken, colorGrading);
+            if (duration > 0) await colorFilterTweener.RunAsync(new ColorTween(colorGrading.colorFilter.value, colorFilter, ColorTweenMode.All, duration, x => colorGrading.colorFilter.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.colorFilter.value = colorFilter;
         }
         private async UniTask ChangeHueShiftAsync(float hueShift, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await hueShiftTweener.RunAsync(new FloatTween(colorGrading.hueShift.value, hueShift, duration, x => colorGrading.hueShift.value = x), asyncToken, colorGrading);
+            if (duration > 0) await hueShiftTweener.RunAsync(new FloatTween(colorGrading.hueShift.value, hueShift, duration, x => colorGrading.hueShift.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.hueShift.value = hueShift;
         }
         private async UniTask ChangeSaturationAsync(float saturation, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await saturationTweener.RunAsync(new FloatTween(colorGrading.saturation.value, saturation, duration, x => colorGrading.saturation.value = x), asyncToken, colorGrading);
+            if (duration > 0) await saturationTweener.RunAsync(new FloatTween(colorGrading.saturation.value, saturation, duration, x => colorGrading.saturation.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.saturation.value = saturation;
         }
         private async UniTask ChangeContrastAsync(float contrast, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await contrastTweener.RunAsync(new FloatTween(colorGrading.contrast.value, contrast, duration, x => colorGrading.contrast.value = x), asyncToken, colorGrading);
+            if (duration > 0) await contrastTweener.RunAsync(new FloatTween(colorGrading.contrast.value, contrast, duration, x => colorGrading.contrast.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.contrast.value = contrast;
         }
         private async UniTask ChangeRedChannelAsync(Vector3 red, float duration, AsyncToken asyncToken = default)
@@ -338,17 +338,17 @@ namespace NaninovelPostProcess {
         }
         private async UniTask ChangeLiftAsync(Vector4 lift, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await liftTweener.RunAsync(new VectorTween(colorGrading.lift.value, lift, duration, x => colorGrading.lift.value = x), asyncToken, colorGrading);
+            if (duration > 0) await liftTweener.RunAsync(new VectorTween(colorGrading.lift.value, lift, duration, x => colorGrading.lift.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.lift.value = lift;
         }
         private async UniTask ChangeGammaAsync(Vector4 gamma, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await gammaTweener.RunAsync(new VectorTween(colorGrading.gamma.value, gamma, duration, x => colorGrading.gamma.value = x), asyncToken, colorGrading);
+            if (duration > 0) await gammaTweener.RunAsync(new VectorTween(colorGrading.gamma.value, gamma, duration, x => colorGrading.gamma.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.gamma.value = gamma;
         }
         private async UniTask ChangeGainAsync(Vector4 gain, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await gainTweener.RunAsync(new VectorTween(colorGrading.gain.value, gain, duration, x => colorGrading.gain.value = x), asyncToken, colorGrading);
+            if (duration > 0) await gainTweener.RunAsync(new VectorTween(colorGrading.gain.value, gain, duration, x => colorGrading.gain.value = x, IgnoreTimescale), asyncToken, colorGrading);
             else colorGrading.gain.value = gain;
         }
 
