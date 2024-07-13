@@ -89,8 +89,8 @@ namespace NaninovelPostProcess {
 
         public override void SetSpawnParameters(IReadOnlyList<string> parameters, bool asap)
         {
-            base.SetSpawnParameters(parameters, asap);  
-            TonemapperMode = (Tonemapper)System.Enum.Parse(typeof(Tonemapper), parameters?.ElementAtOrDefault(2).ToString() ?? defaultTonemapperMode.ToString());
+            base.SetSpawnParameters(parameters, asap);
+            TonemapperMode = System.Enum.TryParse(parameters?.ElementAtOrDefault(2), out Tonemapper tm) ? tm : defaultTonemapperMode;
 
             if (TonemapperMode == Tonemapper.Custom)
             {

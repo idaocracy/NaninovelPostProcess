@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("DepthOfField")]
+    [CommandAlias("DoF")]
     public class SpawnDepthOfField : SpawnPostProcessing
     {
         [ParameterAlias("time")]

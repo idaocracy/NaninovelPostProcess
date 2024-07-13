@@ -1,4 +1,5 @@
 ﻿using Naninovel;
+using UnityEngine;
 using Naninovel.Commands;
 using System.Collections.Generic;
 
@@ -14,8 +15,7 @@ namespace NaninovelPostProcess
 
         //Classic parameters
         public StringParameter Color;
-        public DecimalParameter CenterX;
-        public DecimalParameter CenterY;
+        public DecimalListParameter Center;
         public DecimalParameter Intensity;
         public DecimalParameter Smoothness;
         public DecimalParameter Roundness;
@@ -33,8 +33,7 @@ namespace NaninovelPostProcess
             ToSpawnParam(Weight),
             ToSpawnParam(ClassicOrMask),
             ToSpawnParam(Color),
-            ToSpawnParam(CenterX),
-            ToSpawnParam(CenterY),
+            ToSpawnParam(Assigned(Center) ? (Center[0].ToString() + "," + Center[1].ToString()) : string.Empty),
             ToSpawnParam(Intensity),
             ToSpawnParam(Smoothness),
             ToSpawnParam(Roundness),
