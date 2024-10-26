@@ -17,7 +17,7 @@ namespace NaninovelPostProcess
             this.cameraManager = cameraManager;
         }
 
-        public virtual UniTask InitializeServiceAsync()
+        public virtual UniTask InitializeService()
         {
             if (Configuration.AddPostProcessLayerToCamera)
             {

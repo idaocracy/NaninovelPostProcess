@@ -37,7 +37,7 @@ namespace NaninovelPostProcess {
 			LookUpTexture = parameters?.ElementAtOrDefault(2) ?? defaultLookUpTexture;
 			
 		}
-		public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
+		public async UniTask AwaitSpawn(AsyncToken asyncToken = default)
 		{
 			CompleteTweens();
 			var duration = asyncToken.Completed ? 0 : Duration;

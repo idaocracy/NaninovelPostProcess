@@ -90,7 +90,7 @@ namespace NaninovelPostProcess
 
         protected async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await volumeWeightTweener.RunAsync(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x, IgnoreTimescale), asyncToken, Volume);
+            if (duration > 0) await volumeWeightTweener.RunAwaitable(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x, IgnoreTimescale), asyncToken, Volume);
             else Volume.weight = volumeWeight;
         }
 
@@ -99,7 +99,7 @@ namespace NaninovelPostProcess
             FadeOutDuration = parameters?.ElementAtOrDefault(0)?.AsInvariantFloat() ?? defaultDespawnDuration;
         }
 
-        public async UniTask AwaitDestroyAsync(AsyncToken asyncToken = default)
+        public async UniTask AwaitDestroy(AsyncToken asyncToken = default)
         {
             CompleteTweens();
             var duration = asyncToken.Completed ? 0 : FadeOutDuration;
