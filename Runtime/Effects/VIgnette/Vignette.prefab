@@ -61,6 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 402b240783551dd4dbf757c805a88d60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ignoreTimescale: 0
   defaultSpawnDuration: 0.35
   defaultDespawnDuration: 0.35
   defaultVolumeWeight: 1
