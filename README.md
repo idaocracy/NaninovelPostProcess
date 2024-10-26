@@ -1,7 +1,5 @@
-[![CodeFactor](https://www.codefactor.io/repository/github/idaocracy/naninovelpostprocess/badge)](https://www.codefactor.io/repository/github/idaocracy/naninovelpostprocess)
-
-# NaninovelPostProcessFX
-Postprocessing commands for use within Naninovel. Developed with Naninovel 1.18+ and Post Processing 3.2+.
+# NaninovelPostProcess
+Postprocessing commands for use within Naninovel. To be used with Naninovel 1.19+
 ![naninovelpostprocessgif](https://user-images.githubusercontent.com/77254066/190400417-c9261f8f-93e7-4a5b-a745-6a93733d2ebb.gif)
 
 **Please note that the extension won't work in projects that use URP or HDRP.**
@@ -18,7 +16,7 @@ Notice that the ColorGrading effect has been split into three different parts: H
 ### New Version (V2)
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
-2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. 
+2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. **For 1.20 users, type in https://github.com/idaocracy/NaninovelSceneAssistant.git#1.20 instead.**
 3. Follow step 3 and onwards in the old installation instructions.
 
 **NOTE**: In case you want to make changes to the default settings of an effect prefab, make a copy of it and assign it to the Spawn resources instead.
