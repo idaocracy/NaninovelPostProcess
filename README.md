@@ -16,8 +16,8 @@ Notice that the ColorGrading effect has been split into three different parts: H
 ### New Version (V2)
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
-2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. **For 1.20 users, type in https://github.com/idaocracy/NaninovelSceneAssistant.git#1.20 instead.**
-3. Follow step 3 and onwards in the old installation instructions.
+2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. **For 1.20 users, type in https://github.com/idaocracy/NaninovelPostProcess.git#1.20 instead.**
+3. Follow step 3 and onwards in the old installation instructions. **For 1.20 users, start from step 4.**
 
 **NOTE**: In case you want to make changes to the default settings of an effect prefab, make a copy of it and assign it to the Spawn resources instead.
 
