@@ -90,7 +90,7 @@ namespace NaninovelPostProcess
 
         protected async UniTask ChangeVolumeWeightAsync(float volumeWeight, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await volumeWeightTweener.RunAwaitable(new FloatTween(Volume.weight, volumeWeight, duration, x => Volume.weight = x, IgnoreTimescale), asyncToken, Volume);
+            if (duration > 0) await volumeWeightTweener.RunAwaitable(new FloatTween(Volume.weight, volumeWeight, new(duration), x => Volume.weight = x/*, IgnoreTimescale*/), asyncToken, Volume);
             else Volume.weight = volumeWeight;
         }
 

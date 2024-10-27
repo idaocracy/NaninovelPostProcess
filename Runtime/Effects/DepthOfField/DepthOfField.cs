@@ -82,17 +82,17 @@ namespace NaninovelPostProcess {
 
 		private async UniTask ChangeFocusDistanceAsync(float focusDistance, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await focusDistanceTweener.RunAwaitable(new FloatTween(dof.focusDistance.value, focusDistance, duration, x => dof.focusDistance.value = x, IgnoreTimescale), asyncToken, dof);
+			if (duration > 0) await focusDistanceTweener.RunAwaitable(new FloatTween(dof.focusDistance.value, focusDistance, new(duration), x => dof.focusDistance.value = x/*, IgnoreTimescale*/), asyncToken, dof);
 			else dof.focusDistance.value = focusDistance;
 		}
 		private async UniTask ChangeApertureAsync(float aperture, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await apertureTweener.RunAwaitable(new FloatTween(dof.aperture.value, aperture, duration, x => dof.aperture.value = x, IgnoreTimescale), asyncToken, dof);
+			if (duration > 0) await apertureTweener.RunAwaitable(new FloatTween(dof.aperture.value, aperture, new(duration), x => dof.aperture.value = x/*, IgnoreTimescale*/), asyncToken, dof);
 			else dof.aperture.value = aperture;
 		}
 		private async UniTask ChangeFocalLengthAsync(float focalLength, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await focalLengthTweener.RunAwaitable(new FloatTween(dof.focalLength.value, focalLength, duration, x => dof.focalLength.value = x, IgnoreTimescale), asyncToken, dof);
+			if (duration > 0) await focalLengthTweener.RunAwaitable(new FloatTween(dof.focalLength.value, focalLength, new(duration), x => dof.focalLength.value = x/*, IgnoreTimescale*/), asyncToken, dof);
 			else dof.focalLength.value = focalLength;
 		}
 

@@ -133,32 +133,32 @@ namespace NaninovelPostProcess {
 		}
 		private async UniTask ChangeColorAsync(Color color, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await colorTweener.RunAwaitable(new ColorTween(vignette.color.value, color, ColorTweenMode.All, duration, x => vignette.color.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await colorTweener.RunAwaitable(new ColorTween(vignette.color.value, color,  new(duration), ColorTweenMode.All, x => vignette.color.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.color.value = color;
 		}
 		private async UniTask ChangeCenterAsync(Vector2 center, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await centerTweener.RunAwaitable(new VectorTween(vignette.center.value, center, duration, x => vignette.center.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await centerTweener.RunAwaitable(new VectorTween(vignette.center.value, center, new(duration), x => vignette.center.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.center.value = center;
 		}
 		private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(vignette.intensity.value, intensity, duration, x => vignette.intensity.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(vignette.intensity.value, intensity, new(duration), x => vignette.intensity.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.intensity.value = intensity;
 		}
 		private async UniTask ChangeSmoothnessAsync(float smoothness, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await smoothnessTweener.RunAwaitable(new FloatTween(vignette.smoothness.value, smoothness, duration, x => vignette.smoothness.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await smoothnessTweener.RunAwaitable(new FloatTween(vignette.smoothness.value, smoothness, new(duration), x => vignette.smoothness.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.smoothness.value = smoothness;
 		}
 		private async UniTask ChangeRoundnessAsync(float roundness, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await roundnessTweener.RunAwaitable(new FloatTween(vignette.roundness.value, roundness, duration, x => vignette.roundness.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await roundnessTweener.RunAwaitable(new FloatTween(vignette.roundness.value, roundness, new(duration), x => vignette.roundness.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.roundness.value = roundness;
 		}
 		private async UniTask ChangeOpacityAsync(float opacity, float duration, AsyncToken asyncToken = default)
 		{
-			if (duration > 0) await opacityTweener.RunAwaitable(new FloatTween(vignette.opacity.value, opacity, duration, x => vignette.opacity.value = x, IgnoreTimescale), asyncToken, vignette);
+			if (duration > 0) await opacityTweener.RunAwaitable(new FloatTween(vignette.opacity.value, opacity, new(duration), x => vignette.opacity.value = x/*, IgnoreTimescale*/), asyncToken, vignette);
 			else vignette.opacity.value = opacity;
 		}
 

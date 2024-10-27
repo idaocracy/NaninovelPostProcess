@@ -101,32 +101,32 @@ namespace NaninovelPostProcess {
 
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(lensDistortion.intensity.value, intensity, duration, x => lensDistortion.intensity.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(lensDistortion.intensity.value, intensity, new(duration), x => lensDistortion.intensity.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.intensity.value = intensity;
         }
         private async UniTask ChangeXMultiplierAsync(float xMultiplier, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await xMultiplierTweener.RunAwaitable(new FloatTween(lensDistortion.intensityX.value, xMultiplier, duration, x => lensDistortion.intensityX.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await xMultiplierTweener.RunAwaitable(new FloatTween(lensDistortion.intensityX.value, xMultiplier, new(duration), x => lensDistortion.intensityX.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.intensityX.value = xMultiplier;
         }    
         private async UniTask ChangeYMultiplierAsync(float yMultiplier, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await yMultiplierTweener.RunAwaitable(new FloatTween(lensDistortion.intensityY.value, yMultiplier, duration, x => lensDistortion.intensityY.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await yMultiplierTweener.RunAwaitable(new FloatTween(lensDistortion.intensityY.value, yMultiplier, new(duration), x => lensDistortion.intensityY.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.intensityY.value = yMultiplier;
         }    
         private async UniTask ChangeCenterXAsync(float centerX, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await centerXTweener.RunAwaitable(new FloatTween(lensDistortion.centerX.value, centerX, duration, x => lensDistortion.centerX.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await centerXTweener.RunAwaitable(new FloatTween(lensDistortion.centerX.value, centerX, new(duration), x => lensDistortion.centerX.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.centerX.value = centerX;
         }   
         private async UniTask ChangeCenterYAsync(float centerY, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await centerYTweener.RunAwaitable(new FloatTween(lensDistortion.centerY.value, centerY, duration, x => lensDistortion.centerY.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await centerYTweener.RunAwaitable(new FloatTween(lensDistortion.centerY.value, centerY, new(duration), x => lensDistortion.centerY.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.centerY.value = centerY;
         }    
         private async UniTask ChangeScaleAsync(float scale, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await scaleTweener.RunAwaitable(new FloatTween(lensDistortion.scale.value, scale, duration, x => lensDistortion.scale.value = x, IgnoreTimescale), asyncToken, lensDistortion);
+            if (duration > 0) await scaleTweener.RunAwaitable(new FloatTween(lensDistortion.scale.value, scale, new(duration), x => lensDistortion.scale.value = x/*, IgnoreTimescale*/), asyncToken, lensDistortion);
             else lensDistortion.scale.value = scale;
         }
 
