@@ -76,7 +76,7 @@ namespace NaninovelPostProcess {
 
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(chromaticAberration.intensity.value, Intensity, new(duration), x => chromaticAberration.intensity.value = x/*, IgnoreTimescale*/), asyncToken, chromaticAberration);
+            if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(chromaticAberration.intensity.value, Intensity, new(duration, scale:IgnoreTimescale), x => chromaticAberration.intensity.value = x), asyncToken, chromaticAberration);
             else chromaticAberration.intensity.value = intensity;
         }
 
