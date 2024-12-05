@@ -1,6 +1,6 @@
 {
   "name": "com.idaocracy.naninovelpostprocess",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "displayName": "Naninovel Post Process",
   "description": "Commands for Unity's Post Processing effects. \nHighly recommend to be used together with my Scene Assistant extension.",
   "unity": "2019.4",
