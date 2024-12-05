@@ -45,7 +45,7 @@ namespace NaninovelPostProcess {
             FastMode = bool.Parse(parameters?.ElementAtOrDefault(4) ?? defaultFastMode.ToString()); 
         }
 
-        public async UniTask AwaitSpawnAsync(AsyncToken asyncToken = default)
+        public async UniTask AwaitSpawn(AsyncToken asyncToken = default)
         {
             CompleteTweens();
             var duration = asyncToken.Completed ? 0 : Duration;
@@ -76,7 +76,7 @@ namespace NaninovelPostProcess {
 
         private async UniTask ChangeIntensityAsync(float intensity, float duration, AsyncToken asyncToken = default)
         {
-            if (duration > 0) await intensityTweener.RunAsync(new FloatTween(chromaticAberration.intensity.value, Intensity, duration, x => chromaticAberration.intensity.value = x, IgnoreTimescale), asyncToken, chromaticAberration);
+            if (duration > 0) await intensityTweener.RunAwaitable(new FloatTween(chromaticAberration.intensity.value, Intensity, new(duration, scale:IgnoreTimescale), x => chromaticAberration.intensity.value = x), asyncToken, chromaticAberration);
             else chromaticAberration.intensity.value = intensity;
         }
 
