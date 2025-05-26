@@ -21,7 +21,7 @@ namespace NaninovelPostProcess
         public StringParameter DirtTexture;
         public BooleanParameter DirtIntensity;
 
-        protected override string PostProcessName => "MotionBlur";
+        protected override string PostProcessName => "Bloom";
         protected override bool DestroyWhen => Assigned(Weight) && Weight == 0;
 
         protected override StringListParameter GetSpawnParameters() => new List<string> {
