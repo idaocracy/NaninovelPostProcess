@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("ColorGradingHDR")]
+    [Alias("ColorGradingHDR")]
     public class SpawnColorGradingHDR : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter TonemapperMode;

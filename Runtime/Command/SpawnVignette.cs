@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("Vignette")]
+    [Alias("Vignette")]
     public class SpawnVignette : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter ClassicOrMask;

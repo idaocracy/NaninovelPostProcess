@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("bloom")]
+    [Alias("bloom")]
     public class SpawnBloom : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public DecimalParameter Intensity;

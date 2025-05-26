@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("ColorGradingEXT")]
+    [Alias("ColorGradingEXT")]
     public class SpawnColorGradingEXT : SpawnEffect
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter LookUpTexture;

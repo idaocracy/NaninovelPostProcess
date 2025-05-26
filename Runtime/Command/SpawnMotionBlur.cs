@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("MotionBlur")]
+    [Alias("MotionBlur")]
     public class SpawnMotionBlur : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public DecimalParameter ShutterAngle;

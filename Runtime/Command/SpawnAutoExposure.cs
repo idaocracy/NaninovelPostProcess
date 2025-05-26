@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("AutoExposure")]
+    [Alias("AutoExposure")]
     public class SpawnAutoExposure : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public DecimalParameter FilteringX;

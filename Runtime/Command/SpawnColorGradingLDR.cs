@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("ColorGradingLDR")]
+    [Alias("ColorGradingLDR")]
     public class SpawnColorGradingLDR : SpawnPostProcessing
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter LookUpTexture;

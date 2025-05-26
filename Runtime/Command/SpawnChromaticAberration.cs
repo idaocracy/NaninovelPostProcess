@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace NaninovelPostProcess
 {
-    [CommandAlias("ChromaticAberration")]
+    [Alias("ChromaticAberration")]
     public class SpawnChromaticAberration : SpawnEffect
     {
-        [ParameterAlias("time")]
+        [Alias("time")]
         public DecimalParameter FadeDuration;
         public DecimalParameter Weight;
         public StringParameter SpectralLut;
