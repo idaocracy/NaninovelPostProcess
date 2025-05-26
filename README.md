@@ -16,7 +16,7 @@ Notice that the ColorGrading effect has been split into three different parts: H
 ### New Version (V2)
 Installation 
 1. In Unity's Package Manager, click the plus sign and navigate to *Add package from git URL...*. If you don't have git installed, install it and restart the computer. 
-2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. **For 1.20 users, type in https://github.com/idaocracy/NaninovelPostProcess.git#1.20 instead.**
+2. Type in https://github.com/idaocracy/NaninovelPostProcess.git and it should install automatically. **For 1.21 users, type in https://github.com/idaocracy/NaninovelPostProcess.git#1.21 instead.**
 3. Follow step 3 and onwards in the old installation instructions. **For 1.20 users, start from step 4.**
 4. If "Add Post Processing Layer to Camera" is enabled, you need to add a PostProcessResources asset. You can find the built-in one by searching PostProcessResources with the All filter.
 ![image](https://user-images.githubusercontent.com/77254066/189537431-001c919f-b9f6-4041-9342-c335d04453cf.png)
